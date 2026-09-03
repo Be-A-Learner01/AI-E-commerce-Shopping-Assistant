@@ -1,0 +1,42 @@
+[
+  {
+    "id": 1,
+    "name": "Apple iPhone 16 Pro",
+    "brand": "Apple",
+    "category": "手机",
+    "description": "搭载 A18 Pro 芯片，支持 5G，配备 6.3 英寸 OLED 屏幕和专业级摄像系统",
+    "price": 7999
+  },
+  {
+    "id": 2,
+    "name": "华为 Mate 70 Pro",
+    "brand": "Huawei",
+    "category": "手机",
+    "description": "华为旗舰智能手机，拥有高性能处理器、OLED 屏幕和出色的影像系统",
+    "price": 6999
+  },
+  {
+    "id": 3,
+    "name": "小米 Pad 7 Pro",
+    "brand": "Xiaomi",
+    "category": "平板电脑",
+    "description": "11.2 英寸高分辨率大屏平板，适合办公、影音娱乐和学习使用",
+    "price": 3299
+  },
+  {
+    "id": 4,
+    "name": "Sony WH-1000XM5",
+    "brand": "Sony",
+    "category": "耳机",
+    "description": "旗舰级无线降噪耳机，支持主动降噪、高清音频和长续航",
+    "price": 2499
+  },
+  {
+    "id": 5,
+    "name": "Apple MacBook Air M3",
+    "brand": "Apple",
+    "category": "笔记本电脑",
+    "description": "搭载 M3 芯片的轻薄笔记本，续航时间长，适合办公、编程和日常学习",
+    "price": 8999
+  }
+]
