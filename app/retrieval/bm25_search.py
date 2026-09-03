@@ -2,15 +2,22 @@ import json
 from rank_bm25 import BM25Okapi
 with open(r"G:\code\E-commerce-asist\app\data\products.json","r",encoding="utf-8") as j:
     products = json.load(j)
-from app.agent.state import AgentState
+from ..agent.state import AgentState
 import jieba
 
 def dict_to_texts(state:AgentState | None = None ,lists:dict|None =None) -> str:
-    if state:
-        lists = state["requirements"]
+    if state is not None:
+        lists = state.get("requirements")
+    elif lists is None:
+        raise ValueError("state和lists至少传一个")
     parts = []
-    parts.extend([lists.get("category", "")]*2)
-    parts.extend([lists.get("description","")]*2)
+
+    category = lists.get("category") or ""
+    description = lists.get("description") or ""
+    brand = lists.get("brand") or ""
+
+    parts.extend([category] * 2)
+    parts.extend([description] * 2)
 
     if lists.get("brand"):
         parts.append(lists.get("brand"))
@@ -32,7 +39,7 @@ def tokenize(state: AgentState | None = None,lists: dict | None = None):
     return tokenized_text
 
 tokenized_products = [
-    tokenize(products)
+    tokenize(lists=product)
     for product in products
 ]
 bm25 = BM25Okapi(tokenized_products)
@@ -49,5 +56,3 @@ def bm25_search(state):
             "scores": float(scores[index])
         })
     return results
-
-
