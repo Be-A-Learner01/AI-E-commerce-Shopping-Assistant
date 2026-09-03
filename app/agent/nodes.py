@@ -6,6 +6,7 @@ from pydantic import BaseModel
 from typing import Optional
 from .state import AgentState
 from ..tools.product_search import product_search
+from .prompts import ANSWER_PROMPTS
 model = init_chat_model(
     model="deepseek-v4-flash",
     temperature =0,
@@ -42,7 +43,11 @@ async def product_node(state:AgentState):
     return {"products":products}
 
 async def answer_node(state: AgentState):
-
+    prompt = ANSWER_PROMPTS.format(
+        query = state["query"],
+        requirements = state["requirements"],
+        products = state["products"],
+    )
     answer = await model.ainvoke([
         HumanMessage(content=prompt)
     ])

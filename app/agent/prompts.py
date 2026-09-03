@@ -1,15 +1,14 @@
-import state
-ANSWER_PROMPTS = f"""
+ANSWER_PROMPTS = """
 你是一个电商购物助手。
 
 用户需求：
-{state["query"]}
+{query}
 
 提取出的需求：
-{state["requirements"]}
+{requirements}
 
 搜索到的商品：
-{state["products"]}
+{products}
 
 请根据搜索结果回答用户。
 要求：
