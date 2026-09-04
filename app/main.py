@@ -4,7 +4,8 @@ import asyncio
 
 load_dotenv()
 
-query="我想买一个4000元内的平板电脑"
+query = "我想买一双500元左右的运动鞋，平时跑步穿，要透气一点"
+
 async def main():
     answer = await agent.ainvoke(
         {"query":query}

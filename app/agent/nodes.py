@@ -1,6 +1,5 @@
 from langchain.chat_models import init_chat_model
 from langchain.messages import HumanMessage
-import asyncio
 from ..tools import product_search
 from pydantic import BaseModel
 from typing import Optional
@@ -23,6 +22,10 @@ class Requirements(BaseModel):
     description:Optional[str]=None
     price_max:Optional[float]=None
     price_min:Optional[float]=None
+    sizes:Optional[float]=None
+    storage:Optional[str]=None
+    color:Optional[list[str]]=None
+    tags:Optional[list[str]]=None
 
 
 structured_model = model.with_structured_output(Requirements)

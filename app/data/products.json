@@ -1,42 +1,162 @@
 [
   {
     "id": 1,
-    "name": "Apple iPhone 16 Pro",
-    "brand": "Apple",
-    "category": "手机",
-    "description": "搭载 A18 Pro 芯片，支持 5G，配备 6.3 英寸 OLED 屏幕和专业级摄像系统",
-    "price": 7999
+    "name": "Nike Air Zoom Pegasus 41",
+    "brand": "Nike",
+    "category": "运动鞋",
+    "description": "适合日常跑步和健身，缓震性能较好，鞋面透气",
+    "price": 699,
+    "color": "黑色",
+    "sizes": ["39", "40", "41", "42", "43"],
+    "tags": ["跑步", "透气", "缓震", "运动"]
   },
   {
     "id": 2,
-    "name": "华为 Mate 70 Pro",
-    "brand": "Huawei",
-    "category": "手机",
-    "description": "华为旗舰智能手机，拥有高性能处理器、OLED 屏幕和出色的影像系统",
-    "price": 6999
+    "name": "Adidas Ultra boost Light",
+    "brand": "Adidas",
+    "category": "运动鞋",
+    "description": "高缓震跑鞋，适合长距离跑步，Boost中底提供良好回弹",
+    "price": 899,
+    "color": "白色",
+    "sizes": ["40", "41", "42", "43", "44"],
+    "tags": ["跑步", "缓震", "长距离", "高回弹"]
   },
   {
     "id": 3,
-    "name": "小米 Pad 7 Pro",
-    "brand": "Xiaomi",
-    "category": "平板电脑",
-    "description": "11.2 英寸高分辨率大屏平板，适合办公、影音娱乐和学习使用",
-    "price": 3299
+    "name": "New Balance 530",
+    "brand": "New Balance",
+    "category": "运动鞋",
+    "description": "复古休闲运动鞋，适合日常穿搭和轻度运动",
+    "price": 599,
+    "color": "银灰色",
+    "sizes": ["39", "40", "41", "42", "43"],
+    "tags": ["休闲", "复古", "日常", "运动"]
   },
   {
     "id": 4,
-    "name": "Sony WH-1000XM5",
-    "brand": "Sony",
-    "category": "耳机",
-    "description": "旗舰级无线降噪耳机，支持主动降噪、高清音频和长续航",
-    "price": 2499
+    "name": "ASICS GEL-KAYANO 31",
+    "brand": "ASICS",
+    "category": "运动鞋",
+    "description": "支撑型跑鞋，适合需要稳定支撑的跑者，具有较好的缓震能力",
+    "price": 1099,
+    "color": "蓝色",
+    "sizes": ["40", "41", "42", "43", "44"],
+    "tags": ["跑步", "支撑", "稳定", "缓震"]
   },
   {
     "id": 5,
-    "name": "Apple MacBook Air M3",
+    "name": "Puma RS-X",
+    "brand": "Puma",
+    "category": "运动鞋",
+    "description": "潮流复古运动鞋，鞋底较厚，适合日常休闲穿搭",
+    "price": 499,
+    "color": "黑白色",
+    "sizes": ["39", "40", "41", "42"],
+    "tags": ["休闲", "潮流", "复古", "日常"]
+  },
+  {
+    "id": 6,
+    "name": "Apple iPhone 16 Pro",
     "brand": "Apple",
-    "category": "笔记本电脑",
-    "description": "搭载 M3 芯片的轻薄笔记本，续航时间长，适合办公、编程和日常学习",
-    "price": 8999
+    "category": "手机",
+    "description": "搭载A18 Pro芯片，支持5G，配备6.3英寸OLED屏幕和专业级摄像系统",
+    "price": 7999,
+    "color": "原色钛金属",
+    "storage": ["128GB", "256GB", "512GB", "1TB"],
+    "tags": ["旗舰", "拍照", "5G", "高性能"]
+  },
+  {
+    "id": 7,
+    "name": "Samsung Galaxy S25",
+    "brand": "Samsung",
+    "category": "手机",
+    "description": "旗舰安卓手机，搭载高性能处理器，支持高刷新率屏幕和AI功能",
+    "price": 6999,
+    "color": "黑色",
+    "storage": ["256GB", "512GB"],
+    "tags": ["旗舰", "安卓", "AI", "高性能"]
+  },
+  {
+    "id": 8,
+    "name": "Xiaomi 15",
+    "brand": "Xiaomi",
+    "category": "手机",
+    "description": "小尺寸旗舰手机，性能强劲，支持高刷新率屏幕和快速充电",
+    "price": 4499,
+    "color": "黑色",
+    "storage": ["256GB", "512GB"],
+    "tags": ["旗舰", "小屏", "快充", "高性能"]
+  },
+  {
+    "id": 9,
+    "name": "Huawei Mate 70 Pro",
+    "brand": "Huawei",
+    "category": "手机",
+    "description": "高端旗舰手机，影像能力强，适合注重拍照和续航的用户",
+    "price": 6999,
+    "color": "绿色",
+    "storage": ["256GB", "512GB"],
+    "tags": ["旗舰", "拍照", "续航", "高端"]
+  },
+  {
+    "id": 10,
+    "name": "Sony WH-1000XM5",
+    "brand": "Sony",
+    "category": "耳机",
+    "description": "旗舰降噪头戴式耳机，降噪能力强，适合通勤和旅行",
+    "price": 2399,
+    "color": "黑色",
+    "tags": ["降噪", "头戴式", "通勤", "旅行"]
+  },
+  {
+    "id": 11,
+    "name": "Apple AirPods Pro 2",
+    "brand": "Apple",
+    "category": "耳机",
+    "description": "真无线降噪耳机，体积小巧，适合日常通勤和运动",
+    "price": 1899,
+    "color": "白色",
+    "tags": ["降噪", "无线", "通勤", "运动"]
+  },
+  {
+    "id": 12,
+    "name": "Bose QuietComfort Ultra",
+    "brand": "Bose",
+    "category": "耳机",
+    "description": "高端头戴式降噪耳机，佩戴舒适，适合长时间使用",
+    "price": 2699,
+    "color": "黑色",
+    "tags": ["降噪", "头戴式", "舒适", "长时间使用"]
+  },
+  {
+    "id": 13,
+    "name": "Logitech MX Master 3S",
+    "brand": "Logitech",
+    "category": "鼠标",
+    "description": "办公旗舰无线鼠标，人体工学设计，支持多设备连接",
+    "price": 699,
+    "color": "黑色",
+    "tags": ["办公", "无线", "人体工学", "多设备"]
+  },
+  {
+    "id": 14,
+    "name": "Razer DeathAdder V3",
+    "brand": "Razer",
+    "category": "鼠标",
+    "description": "轻量化电竞游戏鼠标，响应速度快，适合FPS游戏",
+    "price": 499,
+    "color": "黑色",
+    "tags": ["游戏", "电竞", "FPS", "轻量"]
+  },
+  {
+    "id": 15,
+    "name": "Keychron K8 Pro",
+    "brand": "Keychron",
+    "category": "键盘",
+    "description": "无线机械键盘，支持蓝牙和有线连接，适合办公和编程",
+    "price": 699,
+    "color": "黑色",
+    "switch": "机械轴",
+    "tags": ["机械键盘", "无线", "办公", "编程"]
   }
 ]

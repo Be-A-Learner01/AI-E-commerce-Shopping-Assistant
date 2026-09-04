@@ -1,0 +1,61 @@
+[
+  {
+    "id": "eval_001",
+    "inputs": {
+      "query": "我想买一双500元左右的运动鞋，平时跑步穿，要透气一点"
+    },
+    "reference_outputs": {
+      "category": "运动鞋",
+      "price_max": 600,
+      "use_case": "跑步",
+      "requirements": ["透气", "缓震"]
+    }
+  },
+  {
+    "id": "eval_002",
+    "inputs": {
+      "query": "预算800块，想买双Nike跑鞋，主要平时跑5公里"
+    },
+    "reference_outputs": {
+      "category": "运动鞋",
+      "brand": "Nike",
+      "price_max": 800,
+      "use_case": "跑步"
+    }
+  },
+  {
+    "id": "eval_003",
+    "inputs": {
+      "query": "想买一个7000左右的安卓旗舰手机，比较在意性能"
+    },
+    "reference_outputs": {
+      "category": "手机",
+      "brand": null,
+      "price_max": 7500,
+      "os": "Android",
+      "requirements": ["旗舰", "高性能"]
+    }
+  },
+  {
+    "id": "eval_004",
+    "inputs": {
+      "query": "我经常坐地铁，想买个降噪耳机，2000块以内"
+    },
+    "reference_outputs": {
+      "category": "耳机",
+      "price_max": 2000,
+      "requirements": ["降噪", "通勤"]
+    }
+  },
+  {
+    "id": "eval_005",
+    "inputs": {
+      "query": "需要一个办公用的无线鼠标，预算600左右，最好人体工学"
+    },
+    "reference_outputs": {
+      "category": "鼠标",
+      "price_max": 650,
+      "requirements": ["办公", "无线", "人体工学"]
+    }
+  }
+]

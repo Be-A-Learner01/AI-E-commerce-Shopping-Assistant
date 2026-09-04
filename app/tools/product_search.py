@@ -1,6 +1,8 @@
+from app.retrieval.reranker import rerank_results
+from langsmith import traceable
 
-from ..retrieval.bm25_search import bm25_search
-
+@traceable(name="product_search")
 def product_search(state):
-    results = bm25_search(state)
+    results = rerank_results(state)
+
     return results
