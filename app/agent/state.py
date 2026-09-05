@@ -1,5 +1,6 @@
-from typing import TypedDict
-class AgentState(TypedDict):
+from langgraph.graph import MessagesState
+
+class AgentState(MessagesState):
     #用户的问题
     query:str
     #根据用户的需求产生的结果

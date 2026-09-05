@@ -1,16 +1,34 @@
 from app.agent.graph import agent
 from dotenv import load_dotenv
 import asyncio
+from langchain_core.messages import HumanMessage
 
 load_dotenv()
 
-query = "我想买一双500元左右的运动鞋，平时跑步穿，要透气一点"
+config = {
+    "configurable": {
+        "thread_id": "user_001"
+    }
+}
 
-async def main():
+
+async def main(query):
     answer = await agent.ainvoke(
-        {"query":query}
+    {"query": query,
+        "messages": [
+            HumanMessage(content=query)
+        ]
+    },
+    config=config
     )
+    print("本次回答：")
     print(answer["answer"])
+    print(agent.get_state(config))
 if __name__ == "__main__":
-    asyncio.run(main())
+    query1 = "我想买苹果手机，有没有"
+    query2 = "有没有256gb?"
+
+    asyncio.run(main(query1))
+    asyncio.run(main(query2))
+
 

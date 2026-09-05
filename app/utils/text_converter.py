@@ -1,3 +1,4 @@
+from sentence_transformers import SentenceTransformer
 
 def dict_to_text(data: dict, exclude_keys=None):
     parts = []
@@ -19,3 +20,9 @@ def dict_to_text(data: dict, exclude_keys=None):
         parts.append(f"{k}:{v}")
 
     return ",".join(parts)
+
+model = SentenceTransformer("BAAI/bge-m3")
+
+def embed_text(text:str) -> list[float]:
+    embeddings = model.encode(text)
+    return embeddings.tolist()
