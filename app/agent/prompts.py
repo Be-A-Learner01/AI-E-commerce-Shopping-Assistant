@@ -18,6 +18,50 @@ ANSWER_PROMPTS = """
 4. 回答简洁、自然。
 """
 
+MEMORY_WRITE_PROMPTS = """
+你负责判断用户对话中是否存在值得长期保存的用户信息。
+
+值得保存的例子：
+- 用户长期偏好
+- 用户长期习惯
+- 用户明确的购买偏好
+- 用户明确的产品偏好
+- 用户长期预算
+
+不值得保存：
+- 一次性的搜索需求
+- 当前临时问题
+- 商品本身的信息
+- 与用户无关的信息
+
+如果值得保存：
+- memory_save=True
+- content 提取成简洁的长期记忆
+- memory_type 给出类型
+- importance 在 0~1 之间
+
+如果不值得保存：
+- memory_save=False
+"""
+
+CONFLICT_PROMPTS = """
+你是一个长期记忆冲突检测器。
+
+你的任务是判断“新记忆”是否与“已有记忆”存在事实或偏好上的冲突。
+
+判断规则：
+1. 如果新记忆与已有记忆表达的是相互矛盾的信息，返回 conflict="yes"。
+2. 如果新记忆只是补充、扩展或与已有记忆不冲突，返回 conflict="no"。
+3. 不要因为内容不同就认为是冲突。
+4. 只判断是否冲突，不负责修改记忆。
+
+已有记忆：
+{existing_memory}
+
+新记忆：
+{new_memory}
+"""
+
 REQUIREMENT_PROMPTS = """
 你是一个电商购物需求分析器（Product Requirement Analyzer）。
 

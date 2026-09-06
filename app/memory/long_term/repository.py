@@ -52,7 +52,7 @@ def update_memory(
         memory.memory_type = memory_type
 
     if importance is not  None:
-        memory.importance = importance,
+        memory.importance = importance
 
     if embeddings is not None:
         memory.embeddings = embeddings
@@ -65,7 +65,7 @@ def update_memory(
 def delete_memory(db:Session,memory_id:str):
     memory = get_memory(db=db,memory_id=memory_id)
 
-    if memory is not None:
+    if memory is None:
         return None
     db.delete(memory)
     db.commit()
@@ -78,7 +78,7 @@ def delete_memories_by_user(db:Session,user_id:str):
         return None
     db.delete(memory)
     db.commit()
-
+    print("删除成功！")
     return memory
 
 def search_memories(
@@ -94,3 +94,29 @@ def search_memories(
         .limit(top_k)
         .all()
     )
+def find_similar_memories(
+        db:Session,
+        user_id:str,
+        query:str,
+        top_k:int = 1
+):
+    query_embeddings = embed_text(query)
+    return (
+        db.query(
+            Memory,
+            Memory.embeddings.cosine_distance(query_embeddings).label("distance")
+        )
+        .filter(Memory.user_id == user_id)
+        .order_by(
+            Memory.embeddings.cosine_distance(query_embeddings)
+        ).limit(top_k)
+        .all()
+    )
+def is_duplicate(similar_memories,threshold:float = 0.90) -> bool:
+    if not similar_memories:
+        return False
+    _,distance = similar_memories[0]
+    similarity = 1 -distance
+    return similarity >= threshold
+
+

@@ -23,12 +23,9 @@ async def main(query):
     )
     print("本次回答：")
     print(answer["answer"])
-    print(agent.get_state(config))
 if __name__ == "__main__":
-    query1 = "我想买苹果手机，有没有"
-    query2 = "有没有256gb?"
+    query = "我现在更喜欢三星手机了。"
+    asyncio.run(main(query))
 
-    asyncio.run(main(query1))
-    asyncio.run(main(query2))
 
 
