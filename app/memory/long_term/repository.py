@@ -89,7 +89,9 @@ def search_memories(
 ):
     query_embeddings = embed_text(query)
     return (
-        db.query(Memory).filter(Memory.user_id == user_id)
+        db.query(Memory,
+                 Memory.embeddings.cosine_distance(query_embeddings).label("distance"))
+        .filter(Memory.user_id == user_id)
         .order_by(Memory.embeddings.cosine_distance(query_embeddings))
         .limit(top_k)
         .all()

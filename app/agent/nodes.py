@@ -1,5 +1,7 @@
 from langchain.chat_models import init_chat_model
 from langchain.messages import HumanMessage,AIMessage,SystemMessage
+from transformers.models import falcon
+
 from ..tools import product_search
 from pydantic import BaseModel
 from typing import Optional,Literal
@@ -47,20 +49,26 @@ conflict_model = model.with_structured_output(MemoryConflict)
 requirement_model = model.with_structured_output(Requirements)
 
 async def memory_retrieval_node(state:AgentState):
-    user_id = "user_001"
     db = SessionLocal()
-    query = state["query"]
 
-    memories =  search_memories(
-        db=db,
-        user_id=user_id,
-        query=query,
-        top_k=5
-    )
-    print(memories)
-    return {
-        "memories":[memory.content for memory in memories]
-    }
+    user_id = "test001"
+    try:
+        query = state["query"]
+        memories =  search_memories(
+            db=db,
+            user_id=user_id,
+            query=query,
+            top_k=5
+        )
+        print("Memory Retrieval")
+        for memory,distance in memories:
+            print(f"content:{memory.content}")
+            print(f"distance:{distance}")
+        return {
+            "memories":[memory.content for memory,distance in memories]
+        }
+    finally:
+        db.close()
 
 async def detect_memory_conflict(existing_memory:str,new_memory:str) -> bool:
 
@@ -141,8 +149,48 @@ async def requirement_node(state:AgentState):
     )
     return {"requirements":response.model_dump()}
 
+def has_matching_product(products, requirements):
+    for item in products:
+        product = item["document"].metadata["product"]
+
+        # 品牌
+        if requirements.get("brand"):
+            if product["brand"] != requirements["brand"]:
+                continue
+
+        # 最高价格
+        if requirements.get("price_max") is not None:
+            if product["price"] > requirements["price_max"]:
+                continue
+
+        # 最低价格
+        if requirements.get("price_min") is not None:
+            if product["price"] < requirements["price_min"]:
+                continue
+
+        return True
+
+    return False
+
 async def product_node(state:AgentState):
     products = product_search(state)
+    requirements = state["requirements"]
+    if not has_matching_product(products,requirements):
+        print("=== Product Search Fallback ===")
+        print("第一次搜索没有找到商品，开始放宽条件")
+
+        fallback_state = state.copy()
+        fallback_requirements = state["requirements"].copy()
+        fallback_requirements["color"] =None
+        fallback_requirements["sizes"] = None
+        fallback_requirements["storage"] = None
+
+        fallback_state["requirements"] = fallback_requirements
+
+        products = product_search(fallback_state)
+    print("=== PRODUCT DEBUG ===")
+    print(products[0])
+    print(products[0]["document"].metadata)
     return {"products":products}
 
 async def answer_node(state:AgentState):

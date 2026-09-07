@@ -1,31 +1,41 @@
-from app.agent.graph import agent
+
+
+from app.agent.graph import create_agent
 from dotenv import load_dotenv
 import asyncio
 from langchain_core.messages import HumanMessage
 
 load_dotenv()
 
-config = {
-    "configurable": {
-        "thread_id": "user_001"
+
+
+
+async def main():
+    agent,conn = await create_agent()
+
+    config = {
+        "configurable": {
+            "thread_id": "user_001"
+        }
     }
-}
-
-
-async def main(query):
-    answer = await agent.ainvoke(
-    {"query": query,
-        "messages": [
-            HumanMessage(content=query)
-        ]
-    },
-    config=config
+    # 第一轮
+    result1 = await agent.ainvoke(
+        {
+            "query": "我想买一台5000元以内的苹果手机，要求1TB、紫色、折叠屏",
+            "messages": [
+                HumanMessage(content="我想买一台5000元以内的苹果手机，要求1TB、紫色、折叠屏")
+            ],
+        },
+        config=config
     )
-    print("本次回答：")
-    print(answer["answer"])
+
+    print("\n===== 第一轮 =====")
+    print(result1["answer"])
+
+
+    await conn.close()
 if __name__ == "__main__":
-    query = "我现在更喜欢三星手机了。"
-    asyncio.run(main(query))
+    asyncio.run(main())
 
 
 
