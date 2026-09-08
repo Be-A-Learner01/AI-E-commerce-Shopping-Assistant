@@ -1,7 +1,5 @@
 from langchain.chat_models import init_chat_model
 from langchain.messages import HumanMessage,AIMessage,SystemMessage
-from transformers.models import falcon
-
 from ..tools import product_search
 from pydantic import BaseModel
 from typing import Optional,Literal
@@ -10,7 +8,7 @@ from ..tools.product_search import product_search
 from .prompts import ANSWER_PROMPTS,REQUIREMENT_PROMPTS,MEMORY_WRITE_PROMPTS,CONFLICT_PROMPTS
 from app.memory.long_term.repository import (search_memories,create_memory,find_similar_memories,is_duplicate,update_memory)
 from app.memory.long_term.postgres import SessionLocal
-
+import asyncio
 model = init_chat_model(
     model="deepseek-v4-flash",
     temperature =0,
@@ -20,7 +18,7 @@ model = init_chat_model(
         }
     }
 )
-
+LLM_TIMEOUT = 30
 class MemoryExtraction(BaseModel):
     memory_save:bool
     user_id:str
@@ -47,6 +45,13 @@ memory_model = model.with_structured_output(MemoryExtraction)
 conflict_model = model.with_structured_output(MemoryConflict)
 
 requirement_model = model.with_structured_output(Requirements)
+
+async def invoke_llm_with_timeout(model,messages):
+
+    return await asyncio.wait_for(
+        model.ainvoke(messages),
+        timeout=LLM_TIMEOUT
+    )
 
 async def memory_retrieval_node(state:AgentState):
     db = SessionLocal()
@@ -77,7 +82,8 @@ async def detect_memory_conflict(existing_memory:str,new_memory:str) -> bool:
         new_memory=new_memory
 
     )
-    resposne = await conflict_model.ainvoke(
+    resposne = await invoke_llm_with_timeout(
+        conflict_model,
         [
             SystemMessage(content=prompts)
         ]
@@ -88,7 +94,8 @@ async def detect_memory_conflict(existing_memory:str,new_memory:str) -> bool:
 async def memory_write_node(state:AgentState):
     user_id ="test001"
     messages = state["messages"]
-    response = await memory_model.ainvoke(
+    response = await invoke_llm_with_timeout(
+        memory_model,
         [
             SystemMessage(content=MEMORY_WRITE_PROMPTS),
             *messages
@@ -101,6 +108,7 @@ async def memory_write_node(state:AgentState):
 
     try:
         dedup =is_duplicate(similar_memories)
+
         if dedup:
             return {}
         if similar_memories:
@@ -173,27 +181,63 @@ def has_matching_product(products, requirements):
     return False
 
 async def product_node(state:AgentState):
-    products = product_search(state)
+    products = await  search_with_retry(state)
+
+    if products is  None:
+        return {
+            "products":[],
+            "error":"商品搜索超时，请稍后重试"
+        }
+
     requirements = state["requirements"]
+
     if not has_matching_product(products,requirements):
         print("=== Product Search Fallback ===")
-        print("第一次搜索没有找到商品，开始放宽条件")
 
         fallback_state = state.copy()
         fallback_requirements = state["requirements"].copy()
+
         fallback_requirements["color"] =None
         fallback_requirements["sizes"] = None
         fallback_requirements["storage"] = None
 
         fallback_state["requirements"] = fallback_requirements
 
-        products = product_search(fallback_state)
-    print("=== PRODUCT DEBUG ===")
-    print(products[0])
-    print(products[0]["document"].metadata)
+        products = search_with_retry(fallback_state)
+    if products is None:
+        return {
+            "products":[],
+            "error": "商品搜索超时，请稍后重试"
+        }
     return {"products":products}
 
+async def search_with_retry(state:AgentState):
+    max_retries = 4
+
+    for attempt in range(max_retries + 1):
+        try:
+            return product_search(state)
+
+        except Exception as e:
+            print(f"=== Product Search Error ===")
+            print(f"attempt: {attempt + 1}")
+            print(f"error: {e}")
+
+            if attempt == max_retries:
+                return None
+
+            await asyncio.sleep(1)
+
 async def answer_node(state:AgentState):
+
+    if state.get("error"):
+        return {
+            "answer":state["error"],
+            "messages":[
+                AIMessage(content=state["error"])
+            ]
+        }
+
     messages = state["messages"]
 
     answer_prompt = ANSWER_PROMPTS
@@ -204,7 +248,8 @@ async def answer_node(state:AgentState):
 
     商品搜索结果：{state["products"]}
     """
-    answer = await model.ainvoke(
+    answer = await invoke_llm_with_timeout(
+        model,
         [SystemMessage(content=answer_prompt),
          *messages,
          HumanMessage(content=context)]

@@ -1,14 +1,9 @@
-
-
 from app.agent.graph import create_agent
 from dotenv import load_dotenv
 import asyncio
 from langchain_core.messages import HumanMessage
 
 load_dotenv()
-
-
-
 
 async def main():
     agent,conn = await create_agent()

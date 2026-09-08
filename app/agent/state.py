@@ -11,3 +11,5 @@ class AgentState(MessagesState):
     products:list[dict]
     #回答
     answer:str
+    #错误
+    error:str | None
