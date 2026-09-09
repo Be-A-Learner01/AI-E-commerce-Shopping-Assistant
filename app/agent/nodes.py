@@ -9,6 +9,7 @@ from .prompts import ANSWER_PROMPTS,REQUIREMENT_PROMPTS,MEMORY_WRITE_PROMPTS,CON
 from app.memory.long_term.repository import (search_memories,create_memory,find_similar_memories,is_duplicate,update_memory)
 from app.memory.long_term.postgres import SessionLocal
 import asyncio
+import time
 model = init_chat_model(
     model="deepseek-v4-flash",
     temperature =0,
@@ -19,6 +20,13 @@ model = init_chat_model(
     }
 )
 LLM_TIMEOUT = 30
+BRAND_MAP = {
+    "苹果": "Apple",
+    "三星": "Samsung",
+    "华为": "Huawei",
+    "小米": "Xiaomi",
+    "索尼": "Sony",
+}
 class MemoryExtraction(BaseModel):
     memory_save:bool
     user_id:str
@@ -54,9 +62,10 @@ async def invoke_llm_with_timeout(model,messages):
     )
 
 async def memory_retrieval_node(state:AgentState):
+    start =time.perf_counter()
     db = SessionLocal()
-
     user_id = "test001"
+
     try:
         query = state["query"]
         memories =  search_memories(
@@ -65,13 +74,15 @@ async def memory_retrieval_node(state:AgentState):
             query=query,
             top_k=5
         )
-        print("Memory Retrieval")
         for memory,distance in memories:
             print(f"content:{memory.content}")
             print(f"distance:{distance}")
+        elapsed = time.perf_counter() - start
+        print(f"=== LLM Latency === conflict: {elapsed:.2f}s")
         return {
             "memories":[memory.content for memory,distance in memories]
         }
+
     finally:
         db.close()
 
@@ -82,18 +93,22 @@ async def detect_memory_conflict(existing_memory:str,new_memory:str) -> bool:
         new_memory=new_memory
 
     )
+    start = time.perf_counter()
     resposne = await invoke_llm_with_timeout(
         conflict_model,
         [
             SystemMessage(content=prompts)
         ]
     )
+    elapsed = time.perf_counter() - start
+    print(f"=== LLM Latency === conflict: {elapsed:.2f}s")
     return resposne.conflict == "yes"
 
 
 async def memory_write_node(state:AgentState):
     user_id ="test001"
     messages = state["messages"]
+    start = time.perf_counter()
     response = await invoke_llm_with_timeout(
         memory_model,
         [
@@ -101,6 +116,8 @@ async def memory_write_node(state:AgentState):
             *messages
         ]
     )
+    elapsed = time.perf_counter() - start
+    print(f"=== LLM Latency === memory_write: {elapsed:.2f}s")
     if not response.memory_save or not response.content:
         return {}
     db = SessionLocal()
@@ -142,9 +159,11 @@ async def memory_write_node(state:AgentState):
         db.close()
 
 async def requirement_node(state:AgentState):
+
     messages = state["messages"]
     memories = state["memories"]
     memory_text = "\n".join(f"{memory}" for memory in memories)
+    start = time.perf_counter()
     response = await requirement_model.ainvoke(
         [
         SystemMessage(content=REQUIREMENT_PROMPTS),
@@ -155,23 +174,30 @@ async def requirement_node(state:AgentState):
         *messages,
         ]
     )
+    elapsed = time.perf_counter() - start
+    print(f"=== LLM Latency === requirement: {elapsed:.2f}s")
     return {"requirements":response.model_dump()}
 
 def has_matching_product(products, requirements):
+    expected_brand = requirements.get("brand")
+
+    if expected_brand:
+            expected_brand = BRAND_MAP.get(
+                expected_brand,
+                expected_brand
+            )
+
     for item in products:
         product = item["document"].metadata["product"]
 
-        # 品牌
-        if requirements.get("brand"):
-            if product["brand"] != requirements["brand"]:
+        if expected_brand:
+            if product["brand"] != expected_brand:
                 continue
 
-        # 最高价格
         if requirements.get("price_max") is not None:
             if product["price"] > requirements["price_max"]:
                 continue
 
-        # 最低价格
         if requirements.get("price_min") is not None:
             if product["price"] < requirements["price_min"]:
                 continue
@@ -181,6 +207,7 @@ def has_matching_product(products, requirements):
     return False
 
 async def product_node(state:AgentState):
+
     products = await  search_with_retry(state)
 
     if products is  None:
@@ -203,12 +230,12 @@ async def product_node(state:AgentState):
 
         fallback_state["requirements"] = fallback_requirements
 
-        products = search_with_retry(fallback_state)
-    if products is None:
-        return {
-            "products":[],
-            "error": "商品搜索超时，请稍后重试"
-        }
+        products = await search_with_retry(fallback_state)
+        if products is None:
+            return {
+                "products":[],
+                "error": "商品搜索超时，请稍后重试"
+            }
     return {"products":products}
 
 async def search_with_retry(state:AgentState):
@@ -248,12 +275,15 @@ async def answer_node(state:AgentState):
 
     商品搜索结果：{state["products"]}
     """
+    start = time.perf_counter()
     answer = await invoke_llm_with_timeout(
         model,
         [SystemMessage(content=answer_prompt),
          *messages,
          HumanMessage(content=context)]
     )
+    elapsed = time.perf_counter() - start
+    print(f"=== LLM Latency === answer: {elapsed:.2f}s")
 
     return {
         "answer": answer.content,

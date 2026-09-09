@@ -2,7 +2,7 @@ from collections import defaultdict
 from .vector_search import semantic_search
 from .bm25_search import bm25_search
 from langsmith import traceable
-
+import time
 def reciprocal_rank_fusion(semantic_results,bm25_results,k = 60):
     scores = defaultdict(float)
     documents = {}
@@ -33,8 +33,13 @@ def reciprocal_rank_fusion(semantic_results,bm25_results,k = 60):
 def hybrid_search(state,k:int = 10):
     semantic_results = semantic_search(state)
     bm25_results = bm25_search(state)
+    start = time.perf_counter()
+
     results = reciprocal_rank_fusion(
         semantic_results,
         bm25_results
     )
+    elapsed = time.perf_counter() - start
+    print(f"=== Latency === RRF: {elapsed:.2f}s")
+
     return results[:k]

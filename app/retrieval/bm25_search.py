@@ -5,8 +5,13 @@ from langchain_core.documents import Document
 from rank_bm25 import BM25Okapi
 from ..agent.state import AgentState
 from app.utils.text_converter import dict_to_text
+from pathlib import Path
+import time
 
-with open(r"data\products.json","r",encoding="utf-8") as j:
+BASE_DIR = Path(__file__).resolve().parents[1]
+PRODUCTS_PATH = BASE_DIR/"data"/"products.json"
+
+with open(PRODUCTS_PATH,"r",encoding="utf-8") as j:
     products = json.load(j)
 
 def tokenize(products):
@@ -22,6 +27,8 @@ bm25 = BM25Okapi(corpus)
 
 @traceable(name="bm25_search")
 def bm25_search(state:AgentState,top_k:int = 20):
+    start = time.perf_counter()
+
     requirements = dict_to_text(state["requirements"])
     tokenized_req = list(jieba.cut(requirements))
     scores = bm25.get_scores(tokenized_req)
@@ -38,7 +45,8 @@ def bm25_search(state:AgentState,top_k:int = 20):
             }
         )
         results.append(doc)
-
+    elapsed = time.perf_counter() - start
+    print(f"=== Latency === bm25_search: {elapsed:.2f}s")
     return results
 
 

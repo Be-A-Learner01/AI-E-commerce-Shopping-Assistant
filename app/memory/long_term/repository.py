@@ -86,13 +86,16 @@ def search_memories(
         user_id:str,
         query:str,
         top_k:int = 5,
+        threshold:float = 0.6
 ):
     query_embeddings = embed_text(query)
+    distance = Memory.embeddings.cosine_distance(query_embeddings)
     return (
         db.query(Memory,
-                 Memory.embeddings.cosine_distance(query_embeddings).label("distance"))
-        .filter(Memory.user_id == user_id)
-        .order_by(Memory.embeddings.cosine_distance(query_embeddings))
+                 distance.label("distance"))
+        .filter(Memory.user_id == user_id,
+                distance <= 1 - threshold)
+        .order_by(distance)
         .limit(top_k)
         .all()
     )

@@ -9,8 +9,8 @@ async def test_memory_retrieval():
     db = SessionLocal()
 
     try:
-        user_id = "test001"
-        query = "给我推荐一台手机"
+        user_id = "test002"
+        query = "我喜欢三星手机，预算8000元以内"
 
         memories = search_memories(
             db=db,
