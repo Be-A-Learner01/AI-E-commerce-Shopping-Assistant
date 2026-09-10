@@ -22,14 +22,14 @@ def create_memory(
     db.refresh(memory)
     return memory
 
-def get_memories_list(db:Session,user_id:str):
-    return (
-        db.query(Memory).filter(Memory.user_id == user_id).all()
-    )
-
 def get_memory(db:Session,memory_id:str):
     return (
         db.query(Memory).filter(Memory.memory_id == memory_id).first()
+    )
+
+def get_memories_by_user(db:Session,user_id:str):
+    return (
+        db.query(Memory).filter(Memory.user_id == user_id).all()
     )
 
 def update_memory(
@@ -73,7 +73,7 @@ def delete_memory(db:Session,memory_id:str):
     return memory
 
 def delete_memories_by_user(db:Session,user_id:str):
-    memory = get_memories_list(db=db,user_id=user_id)
+    memory = get_memories_by_user(db=db,user_id=user_id)
     if memory is not None:
         return None
     db.delete(memory)

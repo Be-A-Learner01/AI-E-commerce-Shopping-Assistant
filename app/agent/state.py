@@ -1,6 +1,8 @@
 from langgraph.graph import MessagesState
 
 class AgentState(MessagesState):
+    #用户名：
+    user_id:str
     #历史记忆
     memories:list[str]
     #用户的问题

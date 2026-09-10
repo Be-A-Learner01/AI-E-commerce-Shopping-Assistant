@@ -1,8 +1,10 @@
 from sqlalchemy import Column,Integer,String,Text,DateTime,Float
-from pgvector.sqlalchemy import Vector
 from sqlalchemy.orm import declarative_base
+from pgvector.sqlalchemy import Vector
 from datetime import datetime,UTC
 import uuid
+from pydantic import BaseModel
+from typing import Optional,Literal
 
 
 Base = declarative_base()
@@ -25,3 +27,13 @@ class Memory(Base):
     embeddings =Column(Vector(1024))
     created_at = Column(DateTime,default= lambda :datetime.now(UTC))
     updated_at = Column(DateTime,default= lambda :datetime.now(UTC),onupdate= lambda :datetime.now(UTC))
+
+class MemoryExtraction(BaseModel):
+    memory_save:bool
+    user_id:str
+    content:Optional[str] = None
+    memory_type:Optional[str] = None
+    importance:Optional[float] = None
+
+class MemoryConflict(BaseModel):
+    conflict:Literal["yes","no"]

@@ -18,7 +18,7 @@ agent_builder.add_edge("answer_node","memory_write_node")
 agent_builder.add_edge("memory_write_node",END)
 
 async def create_agent():
-    conn = await aiosqlite.connect("data/checkpoints.ab")
+    conn = await aiosqlite.connect("data/checkpoints.db")
     checkpointer = AsyncSqliteSaver(conn)
     agent = agent_builder.compile(
         checkpointer=checkpointer
