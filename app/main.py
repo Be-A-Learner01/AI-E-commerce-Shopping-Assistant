@@ -2,34 +2,35 @@ from app.agent.graph import create_agent
 from dotenv import load_dotenv
 import asyncio
 from langchain_core.messages import HumanMessage
-
-
+from utils.loggings import setup_logging
 load_dotenv()
+setup_logging()
+
 
 async def main():
     agent,conn = await create_agent()
 
     config = {
         "configurable": {
-            "thread_id": "user_002"
+            "thread_id": "user_001"
         }
     }
-    # 第一轮
-    result1 = await agent.ainvoke(
+
+
+    result = await agent.ainvoke(
         {
-            "query": "给我推荐一台手机",
+            "query": "我想买一台4000元以内的三星手机",
             "messages": [
-                HumanMessage(content="给我推荐一台手机")
+                HumanMessage(content="我想买一台4000元以内的三星手机")
             ],
         },
         config=config
     )
 
-    print("\n===== 第一轮 =====")
-    print(result1["answer"])
-
-
     await conn.close()
+
+    return {"answer":result}
+
 if __name__ == "__main__":
 
     asyncio.run(main())

@@ -1,5 +1,5 @@
 from sentence_transformers import SentenceTransformer
-
+from utils.loggings import logger
 def dict_to_text(data: dict, exclude_keys=None):
     parts = []
     exclude_keys = exclude_keys or []
@@ -24,5 +24,11 @@ def dict_to_text(data: dict, exclude_keys=None):
 model = SentenceTransformer("BAAI/bge-m3")
 
 def embed_text(text:str) -> list[float]:
-    embeddings = model.encode(text)
-    return embeddings.tolist()
+    try:
+        logger.info("Embedding started")
+        embeddings = model.encode(text)
+        logger.info("Embedding completed")
+        return embeddings.tolist()
+    except Exception:
+        logger.exception("Embedding failed")
+        raise
