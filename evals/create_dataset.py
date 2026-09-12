@@ -10,8 +10,8 @@ with open("dataset.json", "r", encoding="utf-8") as f:
     dataset = json.load(f)
 
 langsmith_dataset = client.create_dataset(
-    dataset_name="E-assi Requirements Evaluation",
-    description="E-assi 商品需求提取评测数据集"
+    dataset_name="E-assi Requirements Evaluation3",
+    description="E-assi 商品需求提取评测数据集3"
 )
 
 for case in dataset:

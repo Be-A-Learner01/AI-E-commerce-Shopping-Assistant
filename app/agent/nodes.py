@@ -41,10 +41,10 @@ async def memory_retrieval_node(state:AgentState):
         db.close()
 
 async def requirement_node(state:AgentState):
-
     messages = state["messages"]
 
     memories = state["memories"]
+
 
     memory_text = "\n".join(f"{memory}" for memory in memories)
     try:
@@ -63,6 +63,11 @@ async def requirement_node(state:AgentState):
             ]
         )
         logger.info("Requirement LLM response: %s", response)
+
+        if response is None:
+            logger.warning("Requirement extraction return None")
+            raise ValueError("Requirement extraction return None")
+
         requirements = response.model_dump()
 
         logger.info("Requirement extraction completed")

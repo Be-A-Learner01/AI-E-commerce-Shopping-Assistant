@@ -1,62 +1,180 @@
 [
-{
-"id": "eval_001",
-"inputs": {
-"query": "我想买一双500元左右的运动鞋，平时跑步穿，要透气一点"
+    {
+    "id": "eval_001",
+    "inputs": {
+    "query": "我想买一双500元左右的运动鞋，平时跑步穿，要透气一点"
+      },
+    "reference_outputs": {
+    "category": "运动鞋",
+    "price_max": 600,
+    "price_min": 400,
+    "tags": ["跑步", "透气"]
+      }
+    },
+    {
+    "id": "eval_002",
+    "inputs": {
+    "query": "预算800块，想买双Nike跑鞋，主要平时跑5公里"
+      },
+    "reference_outputs": {
+    "category": "跑鞋",
+    "brand": "Nike",
+    "price_max": 800,
+    "tags": ["跑步"]
+      }
+    },
+    {
+    "id": "eval_003",
+    "inputs": {
+    "query": "想买一个7000左右的安卓旗舰手机，比较在意性能"
+      },
+    "reference_outputs": {
+    "category": "手机",
+    "brand": null,
+    "price_min": 6000,
+    "price_max": 8000,
+    "tags": ["安卓", "旗舰", "性能"]
+      }
+    },
+    {"id": "eval_004",
+    "inputs": {
+    "query": "我经常坐地铁，想买个降噪耳机，2000块以内"
+      },
+    "reference_outputs": {
+    "category": "耳机",
+    "price_max": 2000,
+    "tags": ["降噪"]
+      }
+    },
+    {
+    "id": "eval_005",
+    "inputs": {
+    "query": "需要一个办公用的无线鼠标，预算600左右，最好人体工学"
+      },
+    "reference_outputs": {
+    "category": "无线鼠标",
+    "price_max": 700,
+    "price_min": 500,
+    "tags": ["办公", "人体工学", "无线"]
+      }
+    },
+  {
+    "id": "eval_006",
+    "inputs": {
+      "query": "想买一台3000元以内的轻薄办公笔记本，最好16GB内存和512GB固态"
+    },
+    "reference_outputs": {
+      "category": "笔记本",
+      "price_max": 3000,
+      "tags": ["轻薄", "办公", "16GB", "512GB"]
+    }
   },
-"reference_outputs": {
-"category": "运动鞋",
-"price_max": 600,
-"price_min": 400,
-"tags": ["跑步", "透气"]
-  }
-},
-{
-"id": "eval_002",
-"inputs": {
-"query": "预算800块，想买双Nike跑鞋，主要平时跑5公里"
+  {
+    "id": "eval_007",
+    "inputs": {
+      "query": "预算1000元左右，想买一副Sony的降噪耳机，主要坐飞机的时候用"
+    },
+    "reference_outputs": {
+      "category": "耳机",
+      "brand": "Sony",
+      "price_min": 800,
+      "price_max": 1200,
+      "tags": ["降噪"]
+    }
   },
-"reference_outputs": {
-"category": "跑鞋",
-"brand": "Nike",
-"price_max": 800,
-"tags": ["跑步"]
-  }
-},
-{
-"id": "eval_003",
-"inputs": {
-"query": "想买一个7000左右的安卓旗舰手机，比较在意性能"
+  {
+    "id": "eval_008",
+    "inputs": {
+      "query": "想买一双黑色篮球鞋，预算800元以内，42码"
+    },
+    "reference_outputs": {
+      "category": "篮球鞋",
+      "price_max": 800,
+      "sizes": "42",
+      "color": ["黑色"],
+      "tags": ["篮球"]
+    }
   },
-"reference_outputs": {
-"category": "手机",
-"brand": null,
-"price_min": 6500,
-"price_max": 7500,
-"tags": ["安卓", "旗舰", "性能"]
-  }
-},
-{
-"id": "eval_004",
-"inputs": {
-"query": "我经常坐地铁，想买个降噪耳机，2000块以内"
+  {
+    "id": "eval_009",
+    "inputs": {
+      "query": "最近想换手机，预算6000左右，比较看重拍照和续航"
+    },
+    "reference_outputs": {
+      "category": "手机",
+      "price_min": 5000,
+      "price_max": 7000,
+      "tags": ["拍照", "续航"]
+    }
   },
-"reference_outputs": {
-"category": "耳机",
-"price_max": 2000,
-"tags": ["降噪"]
-  }
-},
-{
-"id": "eval_005",
-"inputs": {
-"query": "需要一个办公用的无线鼠标，预算600左右，最好人体工学"
+  {
+    "id": "eval_010",
+    "inputs": {
+      "query": "我平时跑5公里，预算500元，想买一双适合日常跑步的鞋，不要求特定品牌"
+    },
+    "reference_outputs": {
+      "category": "跑鞋",
+      "price_min": 400,
+      "price_max": 600,
+      "tags": ["跑步", "日常"]
+    }
   },
-"reference_outputs": {
-"category": "无线鼠标",
-"price_max": 700,
-"price_min": 500,
-"tags": ["办公", "人体工学", "无线"]
+  {
+    "id": "eval_011",
+    "inputs": {
+      "query": "想买一个1000元以内的机械键盘，主要办公使用，希望声音不要太大"
+    },
+    "reference_outputs": {
+      "category": "机械键盘",
+      "price_max": 1000,
+      "tags": ["办公", "静音"]
+    }
+  },
+  {
+    "id": "eval_012",
+    "inputs": {
+      "query": "预算1500左右，想买一个适合学生日常使用的平板，最好续航久一点"
+    },
+    "reference_outputs": {
+      "category": "平板",
+      "price_min": 1200,
+      "price_max": 1800,
+      "tags": ["学生", "日常使用", "续航"]
+    }
+  },
+  {
+    "id": "eval_013",
+    "inputs": {
+      "query": "想买一个500元左右的背包，上班通勤用，希望能装下15寸笔记本电脑"
+    },
+    "reference_outputs": {
+      "category": "背包",
+      "price_min": 400,
+      "price_max": 600,
+      "tags": ["通勤", "15寸","笔记本电脑"]
+    }
+  },
+  {
+    "id": "eval_014",
+    "inputs": {
+      "query": "预算3000元以内，想买一台家用的空气净化器，比较在意除甲醛和静音"
+    },
+    "reference_outputs": {
+      "category": "空气净化器",
+      "price_max": 3000,
+      "tags": ["家用", "除甲醛", "静音"]
+    }
+  },
+  {
+    "id": "eval_015",
+    "inputs": {
+      "query": "想买一块运动手表，预算2000左右，平时跑步和记录睡眠，希望续航时间长"
+    },
+    "reference_outputs": {
+      "category": "运动手表",
+      "price_min": 1600,
+      "price_max": 2400,
+      "tags": ["跑步", "睡眠", "续航"]
+    }
   }
-}
 ]

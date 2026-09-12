@@ -1,11 +1,16 @@
 import asyncio
 from utils.loggings import logger
-from utils.exceptions import RETRYABLE_EXCEPTIONS
+from utils.exceptions import RETRYABLE_EXCEPTIONS,LLMError
 
 async def retry_async(func,*args,max_retries=2,**kwargs):
     for attempt in range(max_retries + 1):
         try:
-            return await func(*args,**kwargs)
+            result = await func(*args,**kwargs)
+
+            if result is None:
+                raise LLMError("Function returned None")
+
+            return result
 
         except RETRYABLE_EXCEPTIONS as e:
             if attempt == max_retries:
@@ -19,7 +24,6 @@ async def retry_async(func,*args,max_retries=2,**kwargs):
                 func.__name__,
                 attempt + 1,
                 max_retries,
-                wait_time,
                 e
             )
             await asyncio.sleep(wait_time)

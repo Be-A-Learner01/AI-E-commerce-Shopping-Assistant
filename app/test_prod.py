@@ -1,60 +1,29 @@
 import asyncio
-from app.memory.long_term.postgres import SessionLocal
-from app.memory.long_term.repository import search_memories
+
+from app.models.llm import requirement_model
+from langchain_core.messages import HumanMessage,SystemMessage
+from agent.prompts import REQUIREMENT_PROMPTS
 
 
-async def test_memory_retrieval():
 
-    db = SessionLocal()
+async def test_requirement():
+    response = await requirement_model.ainvoke([
+        SystemMessage(content=REQUIREMENT_PROMPTS),
 
-    try:
-        user_id = "test001"
-        query = "给我推荐一台手机"
+        HumanMessage(content="""
+    以下是当前用户相关的长期记忆：
+    用户购买跑鞋的预算约800元，偏好Nike品牌，主要用于日常跑5公里，注重透气性。
+    用户想买Nike跑鞋，预算800元左右，主要用于日常跑5公里。
+    用户购买跑鞋偏好：偏好Nike品牌，预算约800元以内，主要用于日常5公里跑步。
+    """),
 
-        memories = search_memories(
-            db=db,
-            user_id=user_id,
-            query=query,
-            top_k=5
-        )
+        HumanMessage(
+            content="预算800块，想买双Nike跑鞋，主要平时跑5公里"
+        ),
+    ])
 
-        print("\n====================")
-        print("Memory Retrieval Test")
-        print("====================")
-
-        print("Query:", query)
-        print("User:", user_id)
-
-        if not memories:
-            print("❌ 没有检索到记忆")
-            return
-
-        for i, (memory, distance) in enumerate(memories, start=1):
-
-            similarity = 1 - distance
-
-            print(
-                f"{i}. "
-                f"content={memory.content}"
-            )
-
-            print(
-                f"   memory_id={memory.memory_id}"
-            )
-
-            print(
-                f"   distance={distance:.4f}"
-            )
-
-            print(
-                f"   similarity={similarity:.4f}"
-            )
-
-        print("\n✅ Memory Retrieval Test PASSED")
-
-    finally:
-        db.close()
-
+    print("TYPE:", type(response))
+    print("RESULT:", response)
 
 if __name__ == "__main__":
-    asyncio.run(test_memory_retrieval())
+    asyncio.run(test_requirement())

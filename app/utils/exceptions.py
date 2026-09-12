@@ -19,4 +19,5 @@ RETRYABLE_EXCEPTIONS = (
     OperationalError,
     ConnectionError,
     TimeoutError,
+    LLMError,
 )
