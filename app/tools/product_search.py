@@ -2,7 +2,7 @@ from app.retrieval.reranker import rerank_results
 from langsmith import traceable
 from app.agent.state import AgentState
 from app.utils.loggings import logger
-from .product_filter import has_matching_product
+from .product_filter import filter_products
 from app.utils.retry import retry_async
 
 @traceable(name="product_search")
@@ -26,23 +26,31 @@ async def search_with_fallback(state:AgentState):
 
     requirements = state["requirements"]
 
-    if not has_matching_product(products,requirements):
+    filtered_products = filter_products(products,requirements)
 
-        logger.warning("Search fallback started")
+    if filtered_products:
+        return filtered_products
 
-        fallback_state = state.copy()
-        fallback_requirements = state["requirements"].copy()
+    logger.warning("Search fallback started")
 
-        fallback_requirements["color"] =None
-        fallback_requirements["sizes"] = None
-        fallback_requirements["storage"] = None
+    fallback_state = state.copy()
+    fallback_requirements = requirements.copy()
 
-        fallback_state["requirements"] = fallback_requirements
+    fallback_requirements["color"] =None
+    fallback_requirements["sizes"] = None
+    fallback_requirements["storage"] = None
 
-        products = await search_with_retry(fallback_state)
+    fallback_state["requirements"] = fallback_requirements
 
-        if products is None:
-            logger.info("Products search timeout")
-            return None
+    products = await search_with_retry(fallback_state)
 
-    return products
+    if products is None:
+        logger.info("Products search timeout")
+        return None
+
+    filtered_products = filter_products(
+        products,
+        fallback_requirements
+    )
+
+    return filtered_products
