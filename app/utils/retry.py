@@ -1,6 +1,6 @@
 import asyncio
-from utils.loggings import logger
-from utils.exceptions import RETRYABLE_EXCEPTIONS,LLMError
+from app.utils.loggings import logger
+from app.utils.exceptions import RETRYABLE_EXCEPTIONS,LLMError
 
 async def retry_async(func,*args,max_retries=2,**kwargs):
     for attempt in range(max_retries + 1):

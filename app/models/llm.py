@@ -1,6 +1,6 @@
 from langchain.chat_models import init_chat_model
-from schemas.memory_schema import MemoryConflict,MemoryExtraction
-from schemas.requirement_schema import Requirements
+from app.schemas.memory_schema import MemoryConflict,MemoryExtraction
+from app.schemas.requirement_schema import Requirements
 from app.config import settings
 
 

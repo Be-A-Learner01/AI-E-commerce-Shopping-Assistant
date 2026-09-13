@@ -1,9 +1,9 @@
 from app.retrieval.reranker import rerank_results
 from langsmith import traceable
 from app.agent.state import AgentState
-from utils.loggings import logger
+from app.utils.loggings import logger
 from .product_filter import has_matching_product
-from utils.retry import retry_async
+from app.utils.retry import retry_async
 
 @traceable(name="product_search")
 async def product_search(state:AgentState):

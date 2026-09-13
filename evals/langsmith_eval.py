@@ -13,6 +13,7 @@ load_dotenv()
 # 1："c1c02bf6-4a55-466e-baf6-03a9378220b6"
 # 2: "41d484c0-3e20-473b-b04f-86c4b8e4afa3"
 DATASET_ID = "84cc84ba-979c-4967-8ecc-82f6fc39d828"
+eval_user_id = f"eval_{example['id']}"
 
 
 def evaluator(run, example):

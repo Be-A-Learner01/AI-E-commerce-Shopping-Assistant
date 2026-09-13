@@ -1,7 +1,7 @@
 import asyncio
 from app.config import settings
-from utils.exceptions import LLMError
-from utils.loggings import logger
+from app.utils.exceptions import LLMError
+from app.utils.loggings import logger
 
 
 async def invoke_llm_with_timeout(model,messages):

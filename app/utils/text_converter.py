@@ -1,5 +1,5 @@
 from sentence_transformers import SentenceTransformer
-from utils.loggings import logger
+from app.utils.loggings import logger
 def dict_to_text(data: dict, exclude_keys=None):
     parts = []
     exclude_keys = exclude_keys or []

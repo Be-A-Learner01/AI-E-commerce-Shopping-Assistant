@@ -1,4 +1,3 @@
-
 BRAND_MAP = {
     "苹果": "Apple",
     "三星": "Samsung",

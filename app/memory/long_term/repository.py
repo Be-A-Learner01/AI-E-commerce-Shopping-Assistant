@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
-from schemas.memory_schema import Memory
-from utils.text_converter import embed_text
+from app.schemas.memory_schema import Memory
+from app.utils.text_converter import embed_text
 from langsmith import traceable
-from utils.loggings import logger
+from app.utils.loggings import logger
 
 @traceable(name="create_memory")
 def create_memory(
