@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from  langchain_core.messages import HumanMessage
 from  app.agent.graph import create_agent
+from app.schemas.FastAPI_schema import ChatResponse
 import uuid
 
 app = FastAPI(title="E-commerce Assistant")
@@ -9,8 +10,11 @@ app = FastAPI(title="E-commerce Assistant")
 class ChatRequest(BaseModel):
     user_id: str
     query: str
+@app.get("/")
+async def root():
+    return {"message" : "E-commerce Assistant is running"}
 
-@app.post("/chat")
+@app.post("/chat",response_model=ChatResponse)
 async def chat(request: ChatRequest):
     agent,conn = await create_agent()
 

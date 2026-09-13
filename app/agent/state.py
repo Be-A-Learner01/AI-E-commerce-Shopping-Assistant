@@ -1,4 +1,5 @@
 from langgraph.graph import MessagesState
+from app.schemas.requirement_schema import Requirements
 
 class AgentState(MessagesState):
     #用户名：
@@ -8,7 +9,7 @@ class AgentState(MessagesState):
     #用户的问题
     query:str
     #根据用户的需求产生的结果
-    requirements: dict[str,object]
+    requirements: Requirements
     #符合用户需求的产品
     products:list[dict]
     #回答

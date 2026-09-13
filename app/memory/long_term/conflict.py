@@ -1,5 +1,5 @@
 from app.agent.prompts import CONFLICT_PROMPTS
-from app.utils.llm import invoke_llm_with_timeout
+from app.utils.llm_invoke import invoke_llm_with_timeout
 from app.models.llm import conflict_model
 from langchain_core.messages import SystemMessage
 import time
