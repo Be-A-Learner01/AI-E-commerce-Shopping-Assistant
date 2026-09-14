@@ -5,6 +5,9 @@ class BaseError(Exception):
     """项目基础异常"""
     pass
 
+class ProductSearchError(BaseError):
+    pass
+
 class LLMError(BaseError):
     """LLM 相关错误"""
     pass
@@ -19,5 +22,4 @@ RETRYABLE_EXCEPTIONS = (
     OperationalError,
     ConnectionError,
     TimeoutError,
-    LLMError,
 )

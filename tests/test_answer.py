@@ -84,6 +84,7 @@ async def evaluate_answer():
 
         state = {
             "messages": [
+                SystemMessage(content=ANSWER_PROMPTS),
                 HumanMessage(content=case["query"])
             ],
             "query": case["query"],

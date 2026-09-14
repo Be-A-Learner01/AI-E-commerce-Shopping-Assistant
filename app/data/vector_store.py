@@ -4,10 +4,7 @@ from .products_loader import load_products_docs,products
 import os
 from langsmith import traceable
 
-
-
 embeddings = HuggingFaceEmbeddings(model_name = "BAAI/bge-m3")
-
 
 @traceable(name="saved")
 def saved_to_store(products):

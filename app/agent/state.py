@@ -6,8 +6,6 @@ class AgentState(MessagesState):
     user_id:str
     #历史记忆
     memories:list[str]
-    #用户的问题
-    query:str
     #根据用户的需求产生的结果
     requirements: Requirements
     #符合用户需求的产品

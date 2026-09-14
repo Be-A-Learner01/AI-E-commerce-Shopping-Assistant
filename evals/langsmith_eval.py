@@ -2,7 +2,8 @@ from langsmith import Client
 from dotenv import load_dotenv
 import asyncio
 from app.agent.graph import create_agent
-from evals.evaluators import evaluate_requirements
+from evals.requirements_eval import evaluate_requirements
+from evals.product_relevance_eval import evaluate_product_relevance
 from langsmith.evaluation import aevaluate
 from langchain_core.messages import HumanMessage
 import uuid
@@ -13,10 +14,8 @@ load_dotenv()
 # 1："c1c02bf6-4a55-466e-baf6-03a9378220b6"
 # 2: "41d484c0-3e20-473b-b04f-86c4b8e4afa3"
 DATASET_ID = "84cc84ba-979c-4967-8ecc-82f6fc39d828"
-eval_user_id = f"eval_{example['id']}"
 
-
-def evaluator(run, example):
+def requirements_evaluator(run, example):
     predicted = run.outputs["requirements"]
     expected = example.outputs
 
@@ -31,6 +30,24 @@ def evaluator(run, example):
         "key": "requirements_accuracy",
         "score": result["accuracy"],
         "results": result["results"]
+    }
+def product_relevance_evaluator(run, example):
+    requirements = run.outputs["requirements"]
+    products = run.outputs["products"]
+
+    result = evaluate_product_relevance(
+        products,
+        requirements
+    )
+
+    print("=== Product Relevance ===")
+    print("Requirements:", requirements)
+    print("Products:", products)
+    print("Result:", result)
+
+    return {
+        "key": "product_relevance",
+        "score": result["score"],
     }
 
 async def target(inputs):
@@ -49,8 +66,14 @@ async def target(inputs):
             }
         }
     )
+        print("=== Products Before Eval ===")
+        print(result.get("products"))
         return {
-            "requirements": result["requirements"]
+            "requirements": result["requirements"],
+            "products": [
+                item["document"].metadata["product"]
+                for item in result.get("products", [])
+            ]
         }
 
     finally:
@@ -60,7 +83,7 @@ async def main():
     results = await aevaluate(
         target,
         data=DATASET_ID,
-        evaluators=[evaluator],
+        evaluators=[requirements_evaluator,product_relevance_evaluator],
         experiment_prefix="e-assi-requirements",
         max_concurrency=1,
     )

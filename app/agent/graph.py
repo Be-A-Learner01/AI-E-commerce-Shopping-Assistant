@@ -1,25 +1,49 @@
 from langgraph.graph import StateGraph,START,END
-from .state import AgentState
-from .nodes import requirement_node,product_node,answer_node,memory_retrieval_node,memory_write_node
+from langgraph.prebuilt import ToolNode
+from app.tools import TOOLS
+from app.agent.state import AgentState
+from app.agent.nodes import requirement_node,agent_node,answer_node,memory_retrieval_node,memory_write_node
 import aiosqlite
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
+tool_node = ToolNode(TOOLS)
+
+def should_continue(state: AgentState):
+    messages = state["messages"]
+    last_message = messages[-1]
+
+    if last_message.tool_calls:
+        return "tool_node"
+
+    return "end"
+
+
 agent_builder = StateGraph(AgentState)
+
 agent_builder.add_node("memory_retrieval_node",memory_retrieval_node)
+
 agent_builder.add_node("requirement_node",requirement_node)
-agent_builder.add_node("product_node",product_node)
-agent_builder.add_node("answer_node",answer_node)
+
+agent_builder.add_node("agent_node",agent_node)
+
+agent_builder.add_node("tool_node",tool_node)
+
 agent_builder.add_node("memory_write_node",memory_write_node)
+
 agent_builder.add_edge(START,"memory_retrieval_node")
+
 agent_builder.add_edge("memory_retrieval_node","requirement_node")
-agent_builder.add_edge("requirement_node","product_node")
-agent_builder.add_edge("product_node","answer_node")
-agent_builder.add_edge("answer_node","memory_write_node")
+
+agent_builder.add_edge("requirement_node","agent_node")
+agent_builder.add_conditional_edges("agent_node",should_continue, {"tool_node":"tool_node","end":"memory_write_node"})
+agent_builder.add_edge("tool_node","agent_node")
 agent_builder.add_edge("memory_write_node",END)
 
 async def create_agent():
     conn = await aiosqlite.connect("data/checkpoints.db")
+
     checkpointer = AsyncSqliteSaver(conn)
+
     agent = agent_builder.compile(
         checkpointer=checkpointer
     )

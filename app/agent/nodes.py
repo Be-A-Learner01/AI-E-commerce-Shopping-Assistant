@@ -1,8 +1,8 @@
-from app.models.llm import model,memory_model,requirement_model
-from app.utils.llm_invoke import invoke_llm_with_timeout
+from app.models.llm import model,memory_model,requirement_model,invoke_llm_with_timeout,llm_with_tools
 from langchain.messages import HumanMessage,AIMessage,SystemMessage
-from .state import AgentState
-from .prompts import ANSWER_PROMPTS,REQUIREMENT_PROMPTS,MEMORY_WRITE_PROMPTS
+from app.utils.exceptions import ProductSearchError,MemoryError
+from app.agent.state import AgentState
+from app.agent.prompts import ANSWER_PROMPT,REQUIREMENT_PROMPT,MEMORY_WRITE_PROMPT,AGENT_PROMPT
 from app.memory.long_term.repository import search_memories
 from app.memory.long_term.postgres import SessionLocal
 from app.memory.long_term.service import save_memory
@@ -10,18 +10,20 @@ from app.tools.product_search import search_with_fallback
 from app.config import settings
 from app.utils.loggings import logger
 from app.utils.retry import retry_async
+from app.utils.get_query import get_user_query
 
 
 async def memory_retrieval_node(state:AgentState):
     db = SessionLocal()
+
     user_id = state.get("user_id",settings.default_user_id)
 
-    try:
-        query = state["query"]
+    query = get_user_query(state)
 
+    try:
         logger.info("Memory retrieval started")
 
-        memories =  search_memories(
+        memories = search_memories(
             db=db,
             user_id=user_id,
             query=query,
@@ -34,9 +36,11 @@ async def memory_retrieval_node(state:AgentState):
             "memories":[memory.content for memory,distance in memories]
         }
 
-    except Exception:
+    except Exception as e:
         logger.exception("Memory retrieval failed")
-        raise
+        raise MemoryError(
+            f"Memory retrieval failed: {e}"
+        ) from e
     finally:
         db.close()
 
@@ -44,7 +48,6 @@ async def requirement_node(state:AgentState):
     messages = state["messages"]
 
     memories = state["memories"]
-
 
     memory_text = "\n".join(f"{memory}" for memory in memories)
     try:
@@ -54,7 +57,7 @@ async def requirement_node(state:AgentState):
             invoke_llm_with_timeout,
             requirement_model,
             [
-            SystemMessage(content=REQUIREMENT_PROMPTS),
+            SystemMessage(content=REQUIREMENT_PROMPT),
             HumanMessage(content=f"""
         以下是当前用户相关的长期记忆：
         {memory_text}
@@ -66,14 +69,20 @@ async def requirement_node(state:AgentState):
 
         if response is None:
             logger.warning("Requirement extraction return None")
-            raise ValueError("Requirement extraction return None")
+            raise
 
         requirements = response.model_dump()
+
+        for key, value in requirements.items():
+            if value == "null":
+                requirements[key] = None
 
         logger.info("Requirement extraction completed")
 
         return {"requirements": requirements}
+
     except Exception:
+
         logger.exception("Requirement extraction failed")
         raise
 
@@ -84,7 +93,7 @@ async def product_node(state:AgentState):
         result = await search_with_fallback(state)
 
         if result is None:
-
+            logger.warning("Product search returned None")
             return {
                 "products": [],
                 "error": "商品搜索超时，请稍后重试"
@@ -94,8 +103,54 @@ async def product_node(state:AgentState):
 
         return {"products":result}
 
-    except Exception:
+    except Exception as e:
         logger.exception("Products search failed")
+        raise ProductSearchError(
+            f"Memory retrieval failed: {e}"
+        ) from e
+
+async def answer_node(state: AgentState):
+    try:
+        logger.info("Answer generation started")
+
+        if state.get("error"):
+            logger.warning("Answer generation skipped due to previous error")
+            return {
+                "answer": state["error"],
+                "messages": [
+                    AIMessage(content=state["error"])
+                ]
+            }
+
+        messages = state["messages"]
+        query = get_user_query(state)
+
+        answer_prompt = ANSWER_PROMPT
+        context = f"""
+        当前用户需求：{query}
+
+        结构化需求：{state["requirements"]}
+
+        商品搜索结果：{state["products"]}
+        """
+
+        answer = await retry_async(
+            invoke_llm_with_timeout,
+            model,
+            [SystemMessage(content=answer_prompt),
+             *messages,
+             HumanMessage(content=context)]
+        )
+        logger.info("Answer generation completed")
+
+        return {
+            "answer": answer.content,
+            "messages": [
+                AIMessage(content=answer.content)
+            ]
+        }
+    except Exception:
+        logger.exception("Answer generation failed")
         raise
 
 async def memory_write_node(state:AgentState):
@@ -109,7 +164,7 @@ async def memory_write_node(state:AgentState):
             invoke_llm_with_timeout,
             memory_model,
             [
-                SystemMessage(content=MEMORY_WRITE_PROMPTS),
+                SystemMessage(content=MEMORY_WRITE_PROMPT),
                 *messages
             ]
         )
@@ -135,46 +190,31 @@ async def memory_write_node(state:AgentState):
         logger.exception("Memory write failed")
         raise
 
-async def answer_node(state:AgentState):
-    try:
-        logger.info("Answer generation started")
+async def agent_node(state: AgentState):
+    messages = state["messages"]
+    requirements = state["requirements"]
+    context = SystemMessage(
+        content=f"""
+    当前用户已经提取出的结构化购物需求：
 
-        if state.get("error"):
-            logger.warning("Answer generation skipped due to previous error")
-            return {
-                "answer":state["error"],
-                "messages":[
-                    AIMessage(content=state["error"])
-                ]
-            }
+    {requirements}
 
-        messages = state["messages"]
+    请基于这些需求决定是否调用工具。
 
-        answer_prompt = ANSWER_PROMPTS
-        context = f"""
-        当前用户需求：{state["query"]}
-        
-        结构化需求：{state["requirements"]}
-    
-        商品搜索结果：{state["products"]}
-        """
+    如果需要搜索商品，调用 search_products，并使用上述 requirements。
+    """
+    )
 
-        answer = await retry_async(
-            invoke_llm_with_timeout,
-            model,
-            [SystemMessage(content=answer_prompt),
-             *messages,
-             HumanMessage(content=context)]
-        )
-        logger.info("Answer generation completed")
+    response = await retry_async(
+        invoke_llm_with_timeout,
+        llm_with_tools,
+        [
+            SystemMessage(content=AGENT_PROMPT),
+            context,
+            *messages
+        ],
+    )
 
-        return {
-            "answer": answer.content,
-            "messages":[
-                AIMessage(content=answer.content)
-            ]
-        }
-    except Exception:
-        logger.exception("Answer generation failed")
-        raise
+    return {"messages": [response]}
+
 

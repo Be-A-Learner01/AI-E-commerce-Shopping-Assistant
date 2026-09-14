@@ -1,27 +1,8 @@
-import re
+from app.utils.get_price import get_price_range
 CATEGORY_ALIASES = {
     "无线鼠标": {"无线鼠标", "鼠标"},
     "鼠标": {"无线鼠标", "鼠标"},
 }
-
-def get_price_range(predicted):
-    price_min = predicted.get("price_min")
-    price_max = predicted.get("price_max")
-
-    if price_min is not None or price_max is not None:
-        return price_min, price_max
-
-    price_preference = predicted.get("price_preference")
-
-    if price_preference:
-
-        match = re.search(r"(\d+)", price_preference)
-
-        if match:
-            price = float(match.group(1))
-            return price * 0.9, price * 1.1
-
-    return None, None
 
 def evaluate_requirements(predicted:dict,expected:dict):
 
@@ -30,7 +11,7 @@ def evaluate_requirements(predicted:dict,expected:dict):
     for field,expected_value in expected.items():
 
         if field == "tags":
-            predicted_tags = predicted.get("tags", [])
+            predicted_tags = predicted.get("tags") or []
             expected_tags = expected_value
 
             results[field] = all(
@@ -63,7 +44,7 @@ def evaluate_requirements(predicted:dict,expected:dict):
                 )
 
         elif field == "category":
-            predicted_category = predicted.get("category")
+            predicted_category = predicted.get("category") or []
 
             aliases = CATEGORY_ALIASES.get(
                 expected_value,

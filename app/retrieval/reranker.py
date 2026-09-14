@@ -32,7 +32,7 @@ def rerank(state,documents,k = 5):
 @traceable(name="rerank")
 def rerank_results(state):
 
-    hybrid_results = hybrid_search(state,k = 5)
+    hybrid_results = hybrid_search(state,k = 10)
     return [
         {
             "document": item["documents"],
