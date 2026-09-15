@@ -1,6 +1,7 @@
 from langchain_core.tools import tool
 from app.tools.product_search import search_with_fallback
 
+
 @tool
 async def search_products(category: str,
     brand: str | None = None,
@@ -26,7 +27,7 @@ async def search_products(category: str,
     color: 颜色
     tags: 商品标签
     """
-    
+
     requirements = {
         "category": category,
         "brand": brand,

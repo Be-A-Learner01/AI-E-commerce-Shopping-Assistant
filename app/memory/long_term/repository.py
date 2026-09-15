@@ -30,6 +30,7 @@ def get_memory(db:Session,memory_id:str):
     return (
         db.query(Memory).filter(Memory.memory_id == memory_id).first()
     )
+
 @traceable(name="get_memories_by_user")
 def get_memories_by_user(db:Session,user_id:str):
     return (
@@ -79,13 +80,17 @@ def delete_memory(db:Session,memory_id:str):
     return memory
 
 def delete_memories_by_user(db:Session,user_id:str):
-    memory = get_memories_by_user(db=db,user_id=user_id)
-    if memory is not None:
+    memories = get_memories_by_user(db=db,user_id=user_id)
+    if not memories:
+        print("没有找到长期记忆")
         return None
-    db.delete(memory)
+    for memory in memories:
+        db.delete(memory)
     db.commit()
-    print("删除成功！")
-    return memory
+
+    print(f"删除成功，共删除{len(memories)}条")
+
+    return memories
 
 @traceable(name="search_memories")
 def search_memories(

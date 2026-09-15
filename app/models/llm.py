@@ -23,6 +23,7 @@ conflict_model = model.with_structured_output(MemoryConflict)
 requirement_model = model.with_structured_output(Requirements)
 
 llm_with_tools = model.bind_tools(TOOLS)
+
 async def invoke_llm_with_timeout(model,messages):
     logger.info(">>> invoke_llm_with_timeout START")
     try:

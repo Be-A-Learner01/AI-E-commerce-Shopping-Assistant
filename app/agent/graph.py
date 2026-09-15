@@ -35,8 +35,11 @@ agent_builder.add_edge(START,"memory_retrieval_node")
 agent_builder.add_edge("memory_retrieval_node","requirement_node")
 
 agent_builder.add_edge("requirement_node","agent_node")
+
 agent_builder.add_conditional_edges("agent_node",should_continue, {"tool_node":"tool_node","end":"memory_write_node"})
+
 agent_builder.add_edge("tool_node","agent_node")
+
 agent_builder.add_edge("memory_write_node",END)
 
 async def create_agent():

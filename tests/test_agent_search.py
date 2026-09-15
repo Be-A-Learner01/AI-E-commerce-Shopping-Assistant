@@ -20,7 +20,7 @@ async def main():
             },
             config={
                 "configurable": {
-                    "thread_id": "test-agent-tool-001"
+                    "thread_id": "test-agent-search-001"
                 }
             },
         )

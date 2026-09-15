@@ -1,6 +1,6 @@
 from app.models.llm import model,memory_model,requirement_model,invoke_llm_with_timeout,llm_with_tools
 from langchain.messages import HumanMessage,AIMessage,SystemMessage
-from app.utils.exceptions import ProductSearchError,MemoryError
+from app.utils.exceptions import ProductSearchError,MemoryError,LLMError
 from app.agent.state import AgentState
 from app.agent.prompts import ANSWER_PROMPT,REQUIREMENT_PROMPT,MEMORY_WRITE_PROMPT,AGENT_PROMPT
 from app.memory.long_term.repository import search_memories
@@ -49,7 +49,16 @@ async def requirement_node(state:AgentState):
 
     memories = state["memories"]
 
+    current_user_message = next(
+        message
+        for message in reversed(messages)
+        if isinstance(message, HumanMessage)
+    )
+
     memory_text = "\n".join(f"{memory}" for memory in memories)
+    print("========== MEMORY INPUT ==========")
+    print(memories)
+
     try:
         logger.info("Requirement extraction stared")
 
@@ -59,19 +68,23 @@ async def requirement_node(state:AgentState):
             [
             SystemMessage(content=REQUIREMENT_PROMPT),
             HumanMessage(content=f"""
-        以下是当前用户相关的长期记忆：
-        {memory_text}
-        """),
-            *messages,
+                以下是当前用户相关的长期记忆：
+                {memory_text}
+                当前用户需求：
+                {current_user_message.content}
+                """),
             ]
         )
         logger.info("Requirement LLM response: %s", response)
 
         if response is None:
             logger.warning("Requirement extraction return None")
-            raise
+            raise LLMError("Requirement extraction returned None")
 
         requirements = response.model_dump()
+
+        print("\n========== REQUIREMENTS ==========")
+        print(requirements)
 
         for key, value in requirements.items():
             if value == "null":
@@ -82,7 +95,6 @@ async def requirement_node(state:AgentState):
         return {"requirements": requirements}
 
     except Exception:
-
         logger.exception("Requirement extraction failed")
         raise
 
@@ -157,6 +169,13 @@ async def memory_write_node(state:AgentState):
     user_id = state.get("user_id",settings.default_user_id)
 
     messages = state["messages"]
+
+    current_user_message = next(
+        message
+        for message in reversed(messages)
+        if isinstance(message, HumanMessage)
+    )
+
     try:
         logger.info("Memory write started")
 
@@ -165,7 +184,7 @@ async def memory_write_node(state:AgentState):
             memory_model,
             [
                 SystemMessage(content=MEMORY_WRITE_PROMPT),
-                *messages
+                current_user_message
             ]
         )
 
