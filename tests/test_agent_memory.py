@@ -3,6 +3,7 @@ from langchain_core.messages import HumanMessage
 from app.agent.graph import create_agent
 from app.memory.long_term.repository import get_memories_by_user,delete_memories_by_user
 from app.memory.long_term.postgres import SessionLocal
+import uuid
 
 
 
@@ -10,8 +11,8 @@ from app.memory.long_term.postgres import SessionLocal
 async def main():
     agent, conn = await create_agent()
 
-    thread_id_1 = "test-memory-agent-001"
-    thread_id_2 = "test-memory-agent-002"
+    thread_id = str(uuid.uuid4())
+
     db = SessionLocal()
     user_id = "test001"
     try:
@@ -30,7 +31,7 @@ async def main():
             },
             config={
                 "configurable": {
-                    "thread_id": thread_id_1
+                    "thread_id": thread_id
                 }
             },
         )
@@ -49,13 +50,14 @@ async def main():
 
         result2 = await agent.ainvoke(
             {
+                "user_id": user_id,
                 "messages": [
                     HumanMessage(content="那你推荐一台手机给我")
                 ]
             },
             config={
                 "configurable": {
-                    "thread_id": thread_id_2
+                    "thread_id": thread_id
                 }
             },
         )

@@ -98,7 +98,7 @@ def search_memories(
         user_id:str,
         query:str,
         top_k:int = 5,
-        threshold:float = 0.6
+        threshold:float = 0.4
 ):
     query_embeddings = embed_text(query)
     distance = Memory.embeddings.cosine_distance(query_embeddings)

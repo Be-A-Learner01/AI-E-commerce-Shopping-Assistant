@@ -17,7 +17,7 @@ async def memory_retrieval_node(state:AgentState):
     db = SessionLocal()
 
     user_id = state.get("user_id",settings.default_user_id)
-
+    print(user_id)
     query = get_user_query(state)
 
     try:
@@ -167,7 +167,7 @@ async def answer_node(state: AgentState):
 
 async def memory_write_node(state:AgentState):
     user_id = state.get("user_id",settings.default_user_id)
-
+    print(user_id)
     messages = state["messages"]
 
     current_user_message = next(
