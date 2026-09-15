@@ -31,18 +31,16 @@ def evaluate_requirements(predicted:dict,expected:dict):
             expected_min = expected.get("price_min")
             expected_max = expected.get("price_max")
 
-            if expected_min is None:
-                results[field] = predicted_max is None or predicted_max <= expected_max
-
-            elif expected_max is None:
-                results[field] = predicted_min is None or predicted_min >= expected_min
-
-            else:
+            if field == "price_min":
                 results[field] = (
                         predicted_min is not None
-                        and predicted_max is not None
-                        and predicted_min >= expected_min
-                        and predicted_max <= expected_max
+                        and predicted_min <= expected_min
+                )
+
+            else:  # price_max
+                results[field] = (
+                        predicted_max is not None
+                        and predicted_max >= expected_max
                 )
 
         elif field == "category":

@@ -6,7 +6,7 @@ from app.utils.loggings import logger
 from langchain_core.messages import HumanMessage,SystemMessage
 from app.agent.prompts import MEMORY_DEDUP_PROMPT
 from app.models.llm import invoke_llm_with_timeout,dedup_model
-from utils.retry import retry_async
+from app.utils.retry import retry_async
 
 @traceable(name="create_memory")
 def create_memory(

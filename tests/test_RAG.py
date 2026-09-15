@@ -1,7 +1,7 @@
 import asyncio
 
 from app.agent.nodes import requirement_model
-from app.agent.prompts import REQUIREMENT_PROMPTS
+from app.agent.prompts import REQUIREMENT_PROMPT
 from app.retrieval.reranker import rerank_results
 from langchain_core.messages import HumanMessage, SystemMessage
 
@@ -29,7 +29,7 @@ CASES = [
 
 async def build_state(user_input):
     response = await requirement_model.ainvoke([
-        SystemMessage(content=REQUIREMENT_PROMPTS),
+        SystemMessage(content=REQUIREMENT_PROMPT),
         HumanMessage(content=user_input),
     ])
 

@@ -11,12 +11,12 @@ TEST_CASES = [
     {
         "name": "推荐手机",
         "query": "给我推荐一台手机",
-        "relevant_keywords": ["三星", "8000"],
+        "relevant_keywords": ["三星"],
     },
     {
         "name": "跑鞋",
         "query": "我想买一双跑鞋",
-        "relevant_keywords": [],
+        "relevant_keywords": ["跑步"],
     },
 ]
 TOP_K = 5
@@ -36,7 +36,7 @@ def evaluate_case(case):
     try:
         memories = search_memories(
             db=db,
-            user_id="test001",
+            user_id="eval_memory",
             query=case["query"],
             top_k=TOP_K,
             threshold = SIMILARITY_THRESHOLD

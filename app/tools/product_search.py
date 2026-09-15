@@ -39,6 +39,7 @@ async def search_with_fallback(state:AgentState):
 
     fallback_state = state.copy()
     fallback_requirements = requirements.copy()
+
     fallback_requirements["color"] =None
     fallback_requirements["sizes"] = None
     fallback_requirements["storage"] = None
@@ -48,11 +49,6 @@ async def search_with_fallback(state:AgentState):
     fallback_state["requirements"] = fallback_requirements
 
     products = await search_with_retry(fallback_state)
-
-    print("=== Fallback Debug ===")
-    print("Fallback requirements:", fallback_requirements)
-    print("Fallback raw products:", len(products))
-    print("Fallback filtered products:", len(filtered_products))
 
     if products is None:
         logger.info("Products search timeout")
