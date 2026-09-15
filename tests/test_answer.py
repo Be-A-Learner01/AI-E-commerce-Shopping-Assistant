@@ -1,9 +1,7 @@
 import asyncio
-
 from langchain_core.messages import HumanMessage, SystemMessage
-
 from app.agent.nodes import answer_node
-from app.agent.prompts import ANSWER_PROMPTS
+from app.agent.prompts import ANSWER_PROMPT
 
 
 CASES = [
@@ -84,7 +82,7 @@ async def evaluate_answer():
 
         state = {
             "messages": [
-                SystemMessage(content=ANSWER_PROMPTS),
+                SystemMessage(content=ANSWER_PROMPT),
                 HumanMessage(content=case["query"])
             ],
             "query": case["query"],

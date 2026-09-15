@@ -2,6 +2,7 @@ import asyncio
 from langchain_core.messages import HumanMessage
 from app.agent.graph import create_agent
 
+#测试 compare tool 效果
 
 async def main():
     agent, conn = await create_agent()

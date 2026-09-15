@@ -1,5 +1,7 @@
 from langchain.chat_models import init_chat_model
-from app.schemas.memory_schema import MemoryConflict,MemoryExtraction
+from transformers.models.wavlm import modeling_wavlm
+
+from app.schemas.memory_schema import (MemoryConflict,MemoryExtraction,MemoryDedup)
 from app.schemas.requirement_schema import Requirements
 import asyncio
 from app.config import settings
@@ -19,6 +21,8 @@ model = init_chat_model(
 memory_model = model.with_structured_output(MemoryExtraction)
 
 conflict_model = model.with_structured_output(MemoryConflict)
+
+dedup_model = model.with_structured_output(MemoryDedup)
 
 requirement_model = model.with_structured_output(Requirements)
 

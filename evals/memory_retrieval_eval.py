@@ -1,4 +1,3 @@
-
 from app.memory.long_term.postgres import SessionLocal
 from app.memory.long_term.repository import search_memories
 

@@ -30,16 +30,6 @@ async def search_with_fallback(state:AgentState):
 
     requirements = state["requirements"]
 
-    for item in products:
-        product = item["document"].metadata["product"]
-        print(
-            "RAW PRODUCT:",
-            product["name"],
-            "| category:", product.get("category"),
-            "| brand:", product.get("brand"),
-            "| price:", product.get("price")
-        )
-
     filtered_products = filter_products(products,requirements)
 
     if filtered_products:

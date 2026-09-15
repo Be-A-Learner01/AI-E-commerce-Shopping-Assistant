@@ -1,5 +1,22 @@
 from tools.product_match import match_product
-def evaluate_product_relevance(products: list[dict], requirements: dict):
+from langchain_core.messages import ToolMessage
+import json
+
+def evaluate_product_relevance(tool_message: ToolMessage | None, requirements: dict):
+    products = []
+
+    if tool_message:
+        content = tool_message.content
+
+        if isinstance(content, str):
+            try:
+                content = json.loads(content)
+            except json.JSONDecodeError:
+                content = {}
+
+        if isinstance(content, dict):
+            products = content.get("products", [])
+
     if not products:
         return {
             "score": 0,
@@ -7,7 +24,6 @@ def evaluate_product_relevance(products: list[dict], requirements: dict):
             "relevant": 0,
             "details": []
         }
-
     details = []
     relevant = 0
 

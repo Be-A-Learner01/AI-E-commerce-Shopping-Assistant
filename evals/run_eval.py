@@ -1,11 +1,10 @@
 import json
 from evals.requirements_eval import evaluate_requirements
 from evals.product_relevance_eval import evaluate_product_relevance
-from evals.e2e_eval import evaluate_e2e
 from app.agent.graph import create_agent
 from dotenv import load_dotenv
 import asyncio
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import HumanMessage,ToolMessage
 
 load_dotenv()
 
@@ -37,7 +36,6 @@ async def run_eval():
 
             result = await agent.ainvoke(
                 {
-                    "query":query,
                     "messages":[
                         HumanMessage(content=query)
                     ],
@@ -51,21 +49,26 @@ async def run_eval():
             total_requirement_score += requirement_evals["score"]
             total_requirement_fields += requirement_evals["total"]
 
-            raw_products = result.get("products", [])
+            tool_message = next(
+                (
+                    message
+                    for message in reversed(result["messages"])
+                    if isinstance(message, ToolMessage)
+                       and message.name == "search_products"
+                ),
+                None
+            )
 
-            products = [
-                item["document"].metadata["product"]
-                for item in raw_products
-            ]
-
-            product_evals = evaluate_product_relevance(products,predicted)
+            product_evals = evaluate_product_relevance(
+                tool_message,
+                predicted
+            )
 
             total_product_score += product_evals["score"]
             total_products += product_evals["total"]
 
             print("=" * 60)
             print(case["id"])
-            print("Query:", query)
 
             print("\nExpected Requirements:")
             print(expected)
@@ -87,13 +90,9 @@ async def run_eval():
                 f"({product_evals['score']:.1%})"
             )
 
-            # 打印商品具体匹配情况
-            for detail in product_evals["details"]:
-                print(
-                    f"| Product={detail['product_id']} "
-                    f"| relevant={detail['relevant']}/"
-                    f"| reasons={detail['reasons']}"
-                )
+            for message in result["messages"]:
+                print(type(message).__name__)
+                print(message.content)
     finally:
         await conn.close()
 

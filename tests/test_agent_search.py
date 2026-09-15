@@ -1,8 +1,8 @@
 import asyncio
-
 from langchain_core.messages import HumanMessage
-
 from app.agent.graph import create_agent
+
+#测试 search product 效果
 
 
 async def main():

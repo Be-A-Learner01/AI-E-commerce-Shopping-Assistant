@@ -37,3 +37,6 @@ class MemoryExtraction(BaseModel):
 
 class MemoryConflict(BaseModel):
     conflict:Literal["yes","no"]
+
+class MemoryDedup(BaseModel):
+    duplicate: Literal["yes", "no"]

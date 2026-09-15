@@ -3,7 +3,7 @@ import asyncio
 from langchain_core.messages import HumanMessage, SystemMessage
 
 from app.agent.nodes import requirement_model
-from app.agent.prompts import REQUIREMENT_PROMPTS
+from app.agent.prompts import REQUIREMENT_PROMPT
 
 
 CASES = [
@@ -68,7 +68,7 @@ async def evaluate_requirement():
     for case in CASES:
 
         response = await requirement_model.ainvoke([
-            SystemMessage(content=REQUIREMENT_PROMPTS),
+            SystemMessage(content=REQUIREMENT_PROMPT),
             HumanMessage(content=case["input"]),
         ])
 

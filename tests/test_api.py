@@ -2,6 +2,8 @@ from fastapi.testclient import TestClient
 from app.utils.exceptions import LLMError, MemoryError
 from app.main import app
 
+# 测试API层：测试/chat -- user_id + thread_id -- Agent
+
 
 client = TestClient(app,raise_server_exceptions=False)
 

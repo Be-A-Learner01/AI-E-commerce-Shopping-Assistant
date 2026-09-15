@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel,field_validator
 from typing import Optional
 
 class Requirements(BaseModel):
@@ -12,3 +12,10 @@ class Requirements(BaseModel):
     storage:Optional[str] = None
     color:Optional[list[str]] = None
     tags:Optional[list[str]] = None
+
+    @field_validator("*", mode="before")
+    @classmethod
+    def normalize_null(cls,value):
+        if value == "null":
+            return None
+        return value

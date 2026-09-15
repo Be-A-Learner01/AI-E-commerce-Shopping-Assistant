@@ -1,12 +1,11 @@
-from app.models.llm import model,memory_model,requirement_model,invoke_llm_with_timeout,llm_with_tools
-from langchain.messages import HumanMessage,AIMessage,SystemMessage
-from app.utils.exceptions import ProductSearchError,MemoryError,LLMError
+from app.models.llm import memory_model,requirement_model,invoke_llm_with_timeout,llm_with_tools
+from langchain.messages import HumanMessage,SystemMessage
+from app.utils.exceptions import MemoryError,LLMError
 from app.agent.state import AgentState
-from app.agent.prompts import ANSWER_PROMPT,REQUIREMENT_PROMPT,MEMORY_WRITE_PROMPT,AGENT_PROMPT
+from app.agent.prompts import REQUIREMENT_PROMPT,MEMORY_WRITE_PROMPT,AGENT_PROMPT
 from app.memory.long_term.repository import search_memories
 from app.memory.long_term.postgres import SessionLocal
 from app.memory.long_term.service import save_memory
-from app.tools.product_search import search_with_fallback
 from app.config import settings
 from app.utils.loggings import logger
 from app.utils.retry import retry_async
@@ -14,35 +13,53 @@ from app.utils.get_query import get_user_query
 
 
 async def memory_retrieval_node(state:AgentState):
-    db = SessionLocal()
 
     user_id = state.get("user_id",settings.default_user_id)
-    print(user_id)
+
     query = get_user_query(state)
 
     try:
         logger.info("Memory retrieval started")
 
-        memories = search_memories(
-            db=db,
-            user_id=user_id,
-            query=query,
-            top_k=5
-        )
+        db = SessionLocal()
+        
+        try:
+            memories = search_memories(
+                db=db,
+                user_id=user_id,
+                query=query,
+                top_k=5,
+                threshold=0.6
+            )
 
-        logger.info("Memory retrieval completed")
+            memory_contents = [
+                memory.content
+                for memory, distance in memories
+            ]
 
-        return {
-            "memories":[memory.content for memory,distance in memories]
-        }
+            for memory, distance in memories:
+                logger.info(
+                    "Memory retrieved: %s | similarity=%.4f",
+                    memory.content,
+                    1 - distance
+                )
+
+            logger.info(
+                "Memory retrieval completed: %d memories",
+                len(memory_contents)
+            )
+
+            return {
+                "memories": memory_contents
+            }
+        finally:
+            db.close()
 
     except Exception as e:
         logger.exception("Memory retrieval failed")
         raise MemoryError(
             f"Memory retrieval failed: {e}"
         ) from e
-    finally:
-        db.close()
 
 async def requirement_node(state:AgentState):
     messages = state["messages"]
@@ -86,83 +103,12 @@ async def requirement_node(state:AgentState):
         print("\n========== REQUIREMENTS ==========")
         print(requirements)
 
-        for key, value in requirements.items():
-            if value == "null":
-                requirements[key] = None
-
         logger.info("Requirement extraction completed")
 
         return {"requirements": requirements}
 
     except Exception:
         logger.exception("Requirement extraction failed")
-        raise
-
-async def product_node(state:AgentState):
-    try:
-        logger.info("Products search started")
-
-        result = await search_with_fallback(state)
-
-        if result is None:
-            logger.warning("Product search returned None")
-            return {
-                "products": [],
-                "error": "商品搜索超时，请稍后重试"
-            }
-
-        logger.info("Products search completed: %d products found",len(result))
-
-        return {"products":result}
-
-    except Exception as e:
-        logger.exception("Products search failed")
-        raise ProductSearchError(
-            f"Memory retrieval failed: {e}"
-        ) from e
-
-async def answer_node(state: AgentState):
-    try:
-        logger.info("Answer generation started")
-
-        if state.get("error"):
-            logger.warning("Answer generation skipped due to previous error")
-            return {
-                "answer": state["error"],
-                "messages": [
-                    AIMessage(content=state["error"])
-                ]
-            }
-
-        messages = state["messages"]
-        query = get_user_query(state)
-
-        answer_prompt = ANSWER_PROMPT
-        context = f"""
-        当前用户需求：{query}
-
-        结构化需求：{state["requirements"]}
-
-        商品搜索结果：{state["products"]}
-        """
-
-        answer = await retry_async(
-            invoke_llm_with_timeout,
-            model,
-            [SystemMessage(content=answer_prompt),
-             *messages,
-             HumanMessage(content=context)]
-        )
-        logger.info("Answer generation completed")
-
-        return {
-            "answer": answer.content,
-            "messages": [
-                AIMessage(content=answer.content)
-            ]
-        }
-    except Exception:
-        logger.exception("Answer generation failed")
         raise
 
 async def memory_write_node(state:AgentState):

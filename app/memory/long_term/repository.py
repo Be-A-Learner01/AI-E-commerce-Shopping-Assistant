@@ -3,6 +3,10 @@ from app.schemas.memory_schema import Memory
 from app.utils.text_converter import embed_text
 from langsmith import traceable
 from app.utils.loggings import logger
+from langchain_core.messages import HumanMessage,SystemMessage
+from app.agent.prompts import MEMORY_DEDUP_PROMPT
+from app.models.llm import invoke_llm_with_timeout,dedup_model
+from utils.retry import retry_async
 
 @traceable(name="create_memory")
 def create_memory(
@@ -84,6 +88,7 @@ def delete_memories_by_user(db:Session,user_id:str):
     if not memories:
         print("没有找到长期记忆")
         return None
+
     for memory in memories:
         db.delete(memory)
     db.commit()
@@ -98,7 +103,7 @@ def search_memories(
         user_id:str,
         query:str,
         top_k:int = 5,
-        threshold:float = 0.4
+        threshold:float = 0.6
 ):
     query_embeddings = embed_text(query)
     distance = Memory.embeddings.cosine_distance(query_embeddings)
@@ -139,12 +144,34 @@ def find_similar_memories(
         .all()
     )
 
-@traceable(name="is_duplicate")
-def is_duplicate(similar_memories,threshold:float = 0.90) -> bool:
-    if not similar_memories:
-        return False
-    _,distance = similar_memories[0]
-    similarity = 1 -distance
-    return similarity >= threshold
+# @traceable(name="is_duplicate")
+# def is_duplicate(similar_memories,threshold:float = 0.90) -> bool:
+#     if not similar_memories:
+#         return False
+#     _,distance = similar_memories[0]
+#     similarity = 1 -distance
+#     return similarity >= threshold
 
+async def detect_memory_dedup(
+    existing_memory: str,
+    new_memory: str
+) -> bool:
+    response = await retry_async(
+        invoke_llm_with_timeout,
+        dedup_model,
+        [
+            SystemMessage(content=MEMORY_DEDUP_PROMPT),
+            HumanMessage(
+                content=f"""
+                Memory A：
+                {existing_memory}
+                
+                Memory B：
+                {new_memory}
+            """
+            ),
+        ],
+    )
+
+    return response.duplicate == "yes"
 

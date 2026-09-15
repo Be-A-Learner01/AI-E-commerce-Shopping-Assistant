@@ -5,8 +5,7 @@ from app.memory.long_term.repository import get_memories_by_user,delete_memories
 from app.memory.long_term.postgres import SessionLocal
 import uuid
 
-
-
+#测试 memory retrieval 效果
 
 async def main():
     agent, conn = await create_agent()

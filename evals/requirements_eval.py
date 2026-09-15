@@ -24,7 +24,7 @@ def evaluate_requirements(predicted:dict,expected:dict):
         elif field in ("price_min","price_max"):
             predicted_min, predicted_max = get_price_range(predicted)
 
-            if predicted_min is None and predicted_max is None :
+            if predicted_min is None and predicted_max is None:
                 results[field] = False
                 continue
 
@@ -32,14 +32,16 @@ def evaluate_requirements(predicted:dict,expected:dict):
             expected_max = expected.get("price_max")
 
             if expected_min is None:
-                results[field] =  predicted_max <= expected_max
+                results[field] = predicted_max is None or predicted_max <= expected_max
 
             elif expected_max is None:
-                results[field] = predicted_min >= expected_min
+                results[field] = predicted_min is None or predicted_min >= expected_min
 
             else:
                 results[field] = (
-                        predicted_min >= expected_min
+                        predicted_min is not None
+                        and predicted_max is not None
+                        and predicted_min >= expected_min
                         and predicted_max <= expected_max
                 )
 

@@ -2,6 +2,8 @@ import asyncio
 from langchain_core.messages import HumanMessage
 from app.agent.graph import create_agent
 
+#测试 get product details tool 的效果
+
 
 async def main():
     agent, conn = await create_agent()
