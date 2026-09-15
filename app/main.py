@@ -14,11 +14,29 @@ app = FastAPI(title="E-commerce Assistant")
 class ChatRequest(BaseModel):
     user_id: str = Field(...,min_length=1)
     query: str = Field(...,min_length=1)
-@app.get("/")
+@app.get(
+    "/",
+    summary="程序运行查验",
+    description="检查 E-commerce Assistant API 是否正常运行"
+)
 async def root():
     return {"message" : "E-commerce Assistant is running"}
 
-@app.post("/chat",response_model=ChatResponse)
+@app.post(
+    "/chat",
+    response_model=ChatResponse,
+    summary="电商购物助手",
+    description="""
+    根据用户购物需求进行商品推荐。
+
+    功能包括：
+    - 长期记忆检索
+    - 用户需求提取
+    - 商品搜索
+    - 商品筛选
+    - LLM 最终回复
+    """
+)
 async def chat(request: ChatRequest):
     thread_id = str(uuid.uuid4())
     conn = None
