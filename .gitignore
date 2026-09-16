@@ -18,3 +18,5 @@ logs/
 docker-compose.override.yml
 .cache/
 huggingface/
+data/product_store/
+evals/data/product_store/

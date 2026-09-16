@@ -1,5 +1,5 @@
 from app.models.llm import memory_model,requirement_model,invoke_llm_with_timeout,llm_with_tools
-from langchain.messages import HumanMessage,SystemMessage
+from langchain.messages import HumanMessage,SystemMessage,ToolMessage
 from app.utils.exceptions import MemoryError,LLMError
 from app.agent.state import AgentState
 from app.agent.prompts import REQUIREMENT_PROMPT,MEMORY_WRITE_PROMPT,AGENT_PROMPT
@@ -10,7 +10,7 @@ from app.config import settings
 from app.utils.loggings import logger
 from app.utils.retry import retry_async
 from app.utils.get_query import get_user_query
-
+from langgraph.types import interrupt
 
 async def memory_retrieval_node(state:AgentState):
 
@@ -182,4 +182,31 @@ async def agent_node(state: AgentState):
 
     return {"messages": [response]}
 
+def human_confirm_node(state: AgentState):
+    messages = state["messages"]
 
+    products = []
+
+    for message in reversed(messages):
+        if isinstance(message, ToolMessage) and message.name == "search_products":
+            tool_result = message.content
+
+            if isinstance(tool_result, str):
+                import json
+                tool_result = json.loads(tool_result)
+
+            products = tool_result.get("products", [])
+            break
+
+    if not products:
+        return {}
+
+    confirmation = interrupt({
+        "type": "product_confirmation",
+        "message": "请选择你想继续了解的商品",
+        "products": products
+    })
+
+    return {
+        "human_confirmation": confirmation
+    }

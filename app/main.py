@@ -1,5 +1,6 @@
 from fastapi import FastAPI,HTTPException
 from pydantic import BaseModel,Field
+from langgraph.types import Command
 from langchain_core.messages import HumanMessage,AIMessage,ToolMessage
 from app.agent.graph import create_agent
 from app.schemas.FastAPI_schema import ChatResponse
@@ -14,6 +15,9 @@ app = FastAPI(title="E-commerce Assistant")
 class ChatRequest(BaseModel):
     user_id: str = Field(...,min_length=1)
     query: str = Field(...,min_length=1)
+    thread_id: str | None = None
+    resume: str | None = None
+
 @app.get(
     "/",
     summary="程序运行查验",
@@ -34,29 +38,56 @@ async def root():
     - 用户需求提取
     - 商品搜索
     - 商品筛选
+    - Human-in-the-Loop
     - LLM 最终回复
     """
 )
 async def chat(request: ChatRequest):
-    thread_id = str(uuid.uuid4())
+    thread_id = request.thread_id or str(uuid.uuid4())
     conn = None
+
 
     try:
         agent, conn = await create_agent()
 
-        result = await agent.ainvoke(
-            {
-                "user_id": request.user_id,
-                "messages": [
-                    HumanMessage(content=request.query)
-                ],
-            },
-            config={
-                "configurable":{
-                    "thread_id":thread_id
-                }
+        config = {
+            "configurable": {
+                "thread_id": thread_id
             }
-        )
+        }
+        if request.resume is None:
+            result = await agent.ainvoke(
+                {
+                    "user_id": request.user_id,
+                    "messages": [
+                        HumanMessage(content=request.query)
+                    ],
+                },config=config
+            )
+
+        else:
+
+            result = await agent.ainvoke(
+                Command(
+                    resume=request.resume
+                ),
+                config=config
+            )
+
+        interrupts = result.get("__interrupt__")
+
+        if interrupts:
+            interrupt_value = interrupts[0].value
+
+            return {
+                "status": "waiting",
+                "thread_id": thread_id,
+                "answer": None,
+                "requirements": result.get("requirements"),
+                "products": interrupt_value.get("products", []),
+                "interrupt": interrupt_value,
+            }
+
         messages = result.get("messages", [])
         answer = None
 
@@ -74,22 +105,22 @@ async def chat(request: ChatRequest):
             ):
 
                 tool_result = message.content
-
                 # ToolMessage.content 可能是 JSON 字符串
                 if isinstance(tool_result, str):
                     tool_result = json.loads(tool_result)
 
-                products = tool_result.get(
-                    "products",
-                    []
-                )
+                products = tool_result.get("products",[])
 
                 break
+
         # 展示 requirements 和 products
         return {
+            "status": "completed",
+            "thread_id": thread_id,
             "answer": answer,
             "requirements": result.get("requirements"),
-            "products": products
+            "products": products,
+            "interrupt": None,
         }
 
     except LLMError:
