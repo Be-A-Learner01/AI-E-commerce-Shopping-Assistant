@@ -111,14 +111,13 @@ ProA is an AI shopping assistant designed to understand user requirements, retri
                            │
                            ▼
                  ┌─────────────────────┐
-                 │ Requirement         │
-                 │ Extraction          │
+                 │     Requirement     │
+                 │     Extraction      │
                  └──────────┬──────────┘
                             │
                             ▼
                     ┌─────────────┐
                     │   Reason    │
-                    │    思考     │
                     └──────┬──────┘
                            │
                       Need Tool?
